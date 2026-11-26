@@ -1,5 +1,9 @@
 # Jondi ça bouge
 
+<!-- badges : généré par tools/kit-github.mjs -->
+[![qualité](https://github.com/Lancoli/jondi-ca-bouge/actions/workflows/qualite.yml/badge.svg)](https://github.com/Lancoli/jondi-ca-bouge/actions/workflows/qualite.yml) [![release](https://img.shields.io/github/v/release/Lancoli/jondi-ca-bouge?include_prereleases&label=version)](https://github.com/Lancoli/jondi-ca-bouge/releases) [![Conventional Commits](https://img.shields.io/badge/commits-conventionnels%20%2B%20gitmoji-ff69b4)](https://www.conventionalcommits.org/fr/) [![dernier commit](https://img.shields.io/github/last-commit/Lancoli/jondi-ca-bouge)](https://github.com/Lancoli/jondi-ca-bouge/commits)
+<!-- /badges -->
+
 Tout ce qui se passe à Dijon, au même endroit, filtré selon tes goûts, avec le trajet Divia pour t'y rendre.
 
 ```bash
