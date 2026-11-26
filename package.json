@@ -1,0 +1,21 @@
+{
+  "name": "jondi-ca-bouge",
+  "version": "0.1.0",
+  "description": "Agrégateur des événements à Dijon, croisé avec le réseau Divia",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "scrape": "node src/aggregate.js",
+    "test:source": "node src/aggregate.js --only"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "cheerio": "^1.0.0",
+    "gtfs-realtime-bindings": "^1.1.1",
+    "leaflet": "^1.9.4"
+  }
+}
