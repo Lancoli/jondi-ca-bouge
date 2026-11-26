@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jondi ça bouge — tout ce qui se passe à Dijon</title>
+  <meta name="description" content="Les événements à Dijon agrégés depuis une quinzaine de sources, filtrés selon tes goûts, avec le trajet Divia pour t'y rendre.">
+  <meta name="theme-color" content="#0a0913">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Jondi">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-mode="explore">
+  <a class="skip" href="#agenda">Aller à l'agenda</a>
+
+  <header class="masthead">
+    <div class="wrap masthead__row">
+      <div class="brand">
+        <span class="brand__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+        <h1 class="brand__name">Jondi <em>ça bouge</em></h1>
+      </div>
+      <div class="modeswitch" role="group" aria-label="Affichage">
+        <button type="button" data-mode="explore" aria-pressed="true">Explorer</button>
+        <button type="button" data-mode="list" aria-pressed="false">Liste</button>
+      </div>
+      <button class="install" id="installBtn" type="button" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.500-4.500M12 15l4.500-4.500M5 19h14"/></svg>
+        <span>Installer l'appli</span>
+      </button>
+      <button class="origin" id="originBtn" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.800 7 12 7 12Z"/><circle cx="12" cy="10" r="2.600"/></svg>
+        <span id="originLabel">Définir mon point de départ</span>
+      </button>
+    </div>
+    <div class="wrap masthead__meta">
+      <p class="tagline">Tout ce qui se passe à Dijon, au même endroit — et comment t'y rendre.</p>
+      <p class="status" id="status" aria-live="polite">Chargement…</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="explore" id="explore" aria-label="Explorer autour de moi">
+      <div id="map" class="explore__map"></div>
+      <div class="explore__tools">
+        <button class="tool" type="button" data-action="tastes">Mes goûts</button>
+        <button class="tool" type="button" data-action="wishlist" id="exWish" aria-label="Ma liste">♥</button>
+        <button class="tool" type="button" data-action="wishlist" id="exCarnet">Carnet</button>
+        <button class="tool tool--accent" type="button" data-ex="recenter" id="exRecenter" hidden>Recentrer</button>
+      </div>
+      <button class="explore__hint" type="button" data-action="origin" id="exHint">Indique d'où tu pars pour voir ce qui est proche de toi</button>
+      <div class="dock">
+        <div class="dock__head">
+          <h2 id="exTitle">En ce moment</h2>
+          <p id="exSub" class="muted"></p>
+        </div>
+        <div class="dock__cards" id="exCards" tabindex="0" aria-label="Événements du créneau"></div>
+        <div class="dock__jumps" id="exJumps" role="group" aria-label="Aller à"></div>
+        <div class="timeline">
+          <div class="timeline__bars" id="exBars" aria-hidden="true"></div>
+          <input type="range" id="exTime" min="0" max="336" step="1" value="0" aria-label="Avancer dans le temps">
+          <div class="timeline__days" id="exDays" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="soon" aria-labelledby="soonTitle">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 id="soonTitle">Ça commence bientôt</h2>
+          <p id="soonHint" class="muted"></p>
+          <button class="ghost" type="button" data-action="seeall">Voir tout <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="rail" id="soonRail" tabindex="0" aria-label="Prochains événements"></div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Filtres">
+      <div class="wrap">
+        <div class="panel filters">
+          <div class="filters__top">
+            <div class="chips" id="catChips" role="group" aria-label="Thèmes"></div>
+            <button class="chip chip--adv" id="tastesBtn" type="button" aria-haspopup="dialog">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M19 7h1M4 17h3M13 17h7"/><circle cx="16" cy="7" r="2.500"/><circle cx="10" cy="17" r="2.500"/></svg>
+              Filtres avancés <span class="count" id="tastesCount" hidden></span>
+            </button>
+          </div>
+          <div class="fields" id="fields"></div>
+        </div>
+        <div class="subbar">
+          <div class="views" role="tablist" aria-label="Vue">
+            <button role="tab" id="tabAgenda" aria-selected="true" data-view="agenda" type="button">Agenda</button>
+            <button role="tab" id="tabWish" aria-selected="false" data-view="wish" type="button">Ma liste <span id="wishCount"></span></button>
+            <button role="tab" id="tabNow" aria-selected="false" data-view="ongoing" type="button">En ce moment <span id="ongoingCount"></span></button>
+            <button role="tab" id="tabSources" aria-selected="false" data-view="sources" type="button">Sources <span id="sourcesCount"></span></button>
+          </div>
+          <label class="search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.500-3.500"/></svg>
+            <span class="sr">Rechercher</span>
+            <input id="search" type="search" placeholder="Artiste, lieu, mot-clé…" autocomplete="off">
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap agenda" id="agenda" aria-live="polite"></section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>Projet indépendant, sans lien avec la Ville de Dijon ni Keolis. </p>
+      <p>Horaires et temps réel : open data DiviaMobilités via transport.data.gouv.fr. Adresses : Base Adresse Nationale. Chaque événement renvoie vers sa source d'origine.</p>
+    </div>
+  </footer>
+
+  <dialog class="modal" id="eventSheet" aria-labelledby="sheetTitle"></dialog>
+
+  <dialog class="sheet sheet--narrow" id="tastesSheet" aria-labelledby="tastesTitle">
+    <form method="dialog" class="sheet__bar">
+      <h2 id="tastesTitle">Filtres et goûts</h2>
+      <button class="icon-btn" aria-label="Fermer">✕</button>
+    </form>
+    <div class="sheet__body" id="tastesBody"></div>
+  </dialog>
+
+  <dialog class="sheet sheet--narrow" id="originSheet" aria-labelledby="originTitle">
+    <form method="dialog" class="sheet__bar">
+      <h2 id="originTitle">D'où pars-tu ?</h2>
+      <button class="icon-btn" aria-label="Fermer">✕</button>
+    </form>
+    <div class="sheet__body" id="originBody"></div>
+  </dialog>
+
+  <script src="vendor/leaflet/leaflet.js" defer></script>
+  <script src="js/app.js" defer></script>
+  <script src="js/explore.js" defer></script>
+    <!-- retours:debut --><script src="retours/retours-config.js"></script><script src="retours/retours.js" defer></script><!-- retours:fin -->
+</body>
+</html>

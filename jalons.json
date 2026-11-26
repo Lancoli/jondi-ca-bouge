@@ -1,0 +1,177 @@
+{
+  "projet": "jondi_ca_boouge",
+  "but": "Dire ce qui se passe à Dijon ce soir et ce week-end, sans effort : un agenda qui se tient à jour tout seul.",
+  "cibles": [
+    {
+      "id": "auto",
+      "niveau": "N2",
+      "texte": "Agenda à jour seul : rafraîchi chaque jour sans intervention",
+      "decide": "toi"
+    },
+    {
+      "id": "filtres",
+      "niveau": "N2",
+      "texte": "Ce soir / ce week-end, par catégorie, en 2 clics au plus",
+      "decide": "toi"
+    },
+    {
+      "id": "images",
+      "niveau": "N2",
+      "texte": "Chaque événement qui a une image l'affiche",
+      "decide": "toi"
+    },
+    {
+      "id": "question",
+      "niveau": "N2",
+      "texte": "À PRÉCISER : « penaly not repressible app » (4ᵉ cible donnée le 26/11, sens à confirmer)",
+      "decide": "à préciser"
+    }
+  ],
+  "jalons": [
+    {
+      "niveau": "N0",
+      "horizon": "2026-11-27",
+      "decide": "proposé",
+      "ouvert": true
+    },
+    {
+      "niveau": "N1",
+      "horizon": "2026-12-06",
+      "decide": "proposé",
+      "ouvert": false
+    },
+    {
+      "niveau": "N2",
+      "horizon": "2026-12-15",
+      "decide": "toi",
+      "ouvert": false
+    }
+  ],
+  "criteres": [
+    {
+      "id": "auto",
+      "niveau": "N2",
+      "texte": "le relevé du jour date de moins de 26 h, 7 jours de suite",
+      "type": "humain"
+    },
+    {
+      "id": "filtres",
+      "niveau": "N2",
+      "texte": "« ce soir » et « ce week-end » atteignables en 2 clics depuis l'accueil",
+      "type": "humain"
+    }
+  ],
+  "exceptions": [],
+  "todo": [
+    {
+      "id": "t-heberg",
+      "texte": "Choisir l'hébergement (VPS envisagé ; à discuter si la crédibilité en pâtit)",
+      "pour": "en-ligne",
+      "fait": false
+    },
+    {
+      "id": "auto-git",
+      "texte": "N0 · dépôt git propre (rien en attente de commit)",
+      "pour": "git",
+      "preuve": "5 fichier(s) non commité(s)",
+      "fait": false,
+      "auto": true
+    },
+    {
+      "id": "auto-github",
+      "texte": "N0 · sur GitHub, à jour (origin, 0 commit non poussé)",
+      "pour": "github",
+      "preuve": "pas de remote origin",
+      "fait": false,
+      "auto": true
+    }
+  ],
+  "etat": {
+    "date": "2026-11-26T20:05:34.368Z",
+    "niveau": null,
+    "prochain": "N0",
+    "bloque": [
+      "git",
+      "github"
+    ],
+    "humain": {},
+    "criteres": {
+      "git": {
+        "ok": false,
+        "preuve": "5 fichier(s) non commité(s)"
+      },
+      "github": {
+        "ok": false,
+        "preuve": "pas de remote origin"
+      },
+      "readme": {
+        "ok": true,
+        "preuve": "7291 caractères"
+      },
+      "conforme": {
+        "ok": true,
+        "preuve": "10 vérifications"
+      },
+      "liens": {
+        "ok": null,
+        "preuve": "app serveur : à vérifier par son propre test"
+      },
+      "console": {
+        "ok": null,
+        "preuve": "app serveur : à vérifier par son propre test"
+      },
+      "mobile": {
+        "ok": null,
+        "preuve": "app serveur : à vérifier par son propre test"
+      },
+      "remplissage": {
+        "ok": null,
+        "preuve": "app serveur"
+      },
+      "meta": {
+        "ok": null,
+        "preuve": "app serveur"
+      },
+      "lighthouse": {
+        "ok": null,
+        "preuve": "outil pas encore installé"
+      },
+      "a11y": {
+        "ok": null,
+        "preuve": "outil pas encore installé"
+      },
+      "mentions": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      },
+      "en-ligne": {
+        "ok": null,
+        "preuve": "pas encore d'adresse publique"
+      },
+      "e2e": {
+        "ok": null,
+        "preuve": "scénario à écrire"
+      },
+      "audience": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      },
+      "surveillance": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      },
+      "sauvegarde": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      },
+      "auto": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      },
+      "filtres": {
+        "ok": null,
+        "preuve": "à valider par toi"
+      }
+    }
+  }
+}
