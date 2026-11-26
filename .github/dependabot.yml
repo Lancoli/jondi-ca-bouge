@@ -5,8 +5,10 @@ updates:
     directory: /
     schedule: { interval: monthly }
     labels: [dépendances]
+    commit-message: { prefix: build, include: scope }
   - package-ecosystem: npm
     directory: /
     schedule: { interval: monthly }
     labels: [dépendances]
+    commit-message: { prefix: build, include: scope }
     open-pull-requests-limit: 5
