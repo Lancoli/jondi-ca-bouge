@@ -85,36 +85,36 @@
       "preuve": "1 commit(s) non poussé(s)",
       "fait": true,
       "auto": true,
-      "fait_le": "2026-11-27T00:44:15.240Z"
+      "fait_le": "2026-11-27T04:17:42.032Z"
     },
     {
       "id": "auto-licence",
       "texte": "N1 · licence déclarée (fichier LICENSE)",
       "pour": "licence",
       "preuve": "LICENSE absent",
-      "fait": false,
-      "auto": true
+      "fait": true,
+      "auto": true,
+      "fait_le": "2026-11-27T03:38:22.318Z"
     },
     {
       "id": "auto-changelog",
       "texte": "N1 · journal des versions (CHANGELOG.md)",
       "pour": "changelog",
       "preuve": "CHANGELOG.md absent",
-      "fait": false,
-      "auto": true
+      "fait": true,
+      "auto": true,
+      "fait_le": "2026-11-27T03:38:22.318Z"
     }
   ],
   "etat": {
-    "date": "2026-11-27T00:44:15.240Z",
+    "date": "2026-11-27T04:17:42.032Z",
     "niveau": "N0",
     "prochain": "N1",
     "bloque": [
       "liens",
       "console",
       "mobile",
-      "remplissage",
-      "licence",
-      "changelog"
+      "remplissage"
     ],
     "humain": {},
     "criteres": {
@@ -175,15 +175,15 @@
         "type": "auto"
       },
       "licence": {
-        "ok": false,
-        "preuve": "LICENSE absent",
+        "ok": true,
+        "preuve": "LICENSE",
         "niveau": "N1",
         "texte": "licence déclarée (fichier LICENSE)",
         "type": "auto"
       },
       "changelog": {
-        "ok": false,
-        "preuve": "CHANGELOG.md absent",
+        "ok": true,
+        "preuve": "CHANGELOG.md",
         "niveau": "N1",
         "texte": "journal des versions (CHANGELOG.md)",
         "type": "auto"
