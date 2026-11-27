@@ -6,7 +6,7 @@ const { aggregate, readCached } = require("./src/aggregate");
 const { CATEGORIES } = require("./src/categories");
 const { suggest } = require("./src/geocode");
 const divia = require("./src/divia");
-const trajets = require("./src/trajets");
+const trips = require("./src/trips");
 const { get } = require("./src/lib/http");
 
 const PORT = +process.env.PORT || 4021;
@@ -91,17 +91,17 @@ const routes = {
     json(res, 200, await divia.plan({ from, to, arriveBy: q.get("arriveBy") || undefined }));
   },
 
-  // Comparatif des modes (à pied, vélo, bus/tram, voiture) et de leurs coûts.
-  // ?modes=marche,voiture pour n'en demander que certains ; ?conso=6.5&prix=1.85 pour chiffrer l'essence.
-  "GET /api/trajets": async (req, res, q) => {
+  // Mode comparison (walk, bike, bus/tram, car) and their costs.
+  // ?modes=walk,car to ask for some only; ?consumption=6.5&price=1.85 to cost the fuel.
+  "GET /api/trips": async (req, res, q) => {
     const from = point(q.get("from"));
     const to = point(q.get("to"));
-    if (!from || !to) return json(res, 400, { error: "from et to attendus sous la forme lat,lng" });
+    if (!from || !to) return json(res, 400, { error: "from and to expected as lat,lng" });
     const modes = (q.get("modes") || "").split(",").filter(Boolean);
-    const conso = +q.get("conso");
-    const prix = +q.get("prix");
-    const profil = conso && prix ? { vehicule: { conso, prix } } : null;
-    json(res, 200, await trajets.comparer({ from, to, arriveBy: q.get("arriveBy") || undefined, modes, profil }));
+    const consumption = +q.get("consumption");
+    const price = +q.get("price");
+    const profile = consumption && price ? { vehicle: { consumption, price } } : null;
+    json(res, 200, await trips.compare({ from, to, arriveBy: q.get("arriveBy") || undefined, modes, profile }));
   },
 };
 

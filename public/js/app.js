@@ -898,11 +898,12 @@
   // À pied, à vélo, en voiture sur le vrai réseau de rues (OpenStreetMap). Un mode sans réponse est
   // simplement absent : pas de durée à vol d'oiseau présentée comme un calcul.
   async function loadCompare(o, e) {
-    const q = new URLSearchParams({ from: `${o.lat},${o.lng}`, to: `${e.lat},${e.lng}`, modes: "marche,velo,voiture" });
-    if (prefs.car) q.set("conso", prefs.car.conso), q.set("prix", prefs.car.prix);
+    const q = new URLSearchParams({ from: `${o.lat},${o.lng}`, to: `${e.lat},${e.lng}`, modes: "walk,bike,car" });
+    // prefs.car keeps its stored keys (conso, prix): visitors already saved them
+    if (prefs.car) q.set("consumption", prefs.car.conso), q.set("price", prefs.car.prix);
     let r;
     try {
-      r = await (await fetch(`/api/trajets?${q}`)).json();
+      r = await (await fetch(`/api/trips?${q}`)).json();
     } catch {
       r = null;
     }
@@ -911,7 +912,7 @@
     const ok = (r?.modes || []).filter((m) => m.ok);
     box.innerHTML = ok
       .map((m) => {
-        const cost = (m.couts || []).map((c) => ` · <span title="${esc(c.detail)}">${c.value.toFixed(2).replace(".", ",")} ${c.unit}</span>`).join("");
+        const cost = (m.costs || []).map((c) => ` · <span title="${esc(c.detail)}">${c.value.toFixed(2).replace(".", ",")} ${c.unit}</span>`).join("");
         return `<div class="compare__m"><small>${esc(m.label)}</small><b>${m.minutes} min</b><span class="muted">${km(m.meters / 1000)}${cost}</span></div>`;
       })
       .join("");
