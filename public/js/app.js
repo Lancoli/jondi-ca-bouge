@@ -161,8 +161,8 @@
 
   // Starting point: one-off address > GPS (if chosen) > saved address > GPS.
   const origin = () => state.temp || (prefs.useGps && state.gps) || placeOrigin(activePlace()) || state.gps || null;
-  const cat = (id) => state.categories.find((c) => c.id === id) || { id, label: id, axe: "jaune" };
-  const axeOf = (e) => cat(e.categories[0]).axe;
+  const cat = (id) => state.categories.find((c) => c.id === id) || { id, label: id, axis: "jaune" };
+  const axisOf = (e) => cat(e.categories[0]).axis;
   const hueOf = (e) => look(e.categories[0])[0];
   const hasTastes = () => Object.values(prefs.tastes.cats).some((v) => v === 1) || prefs.tastes.like.length > 0;
 
@@ -218,7 +218,7 @@
       : timed ? minutesBetween(now, slot.start) <= 45 && minutesBetween(slot.end && slot.end > slot.start ? slot.end : slot.start, now) <= (slot.end && slot.end > slot.start ? 0 : 180)
       : dayOf(slot.start) === dayOf(now);
     if (!open) return `<div class="checkin"><strong>Carnet de sorties</strong><span>Le moment venu, valide ta présence sur place pour l'ajouter à ton carnet.</span></div>`;
-    if (!state.gps) return `<div class="checkin"><strong>C'est maintenant</strong><span>Active ta position pour valider ta présence sur place.</span><button class="btn btn--vert btn--small" type="button" data-action="gps">Activer ma position</button></div>`;
+    if (!state.gps) return `<div class="checkin"><strong>C'est maintenant</strong><span>Active ta position pour valider ta présence sur place.</span><button class="btn btn--green btn--small" type="button" data-action="gps">Activer ma position</button></div>`;
     const d = distance(state.gps, e);
     return d <= CHECKIN_KM
       ? `<div class="checkin is-here"><strong>Tu y es !</strong><span>À ${km(d)} du lieu.</span><button class="btn btn--rose btn--small" type="button" data-action="checkin">J'y suis — ajouter au carnet</button></div>`
@@ -841,7 +841,7 @@
     }
     if (!o) {
       box.innerHTML = `<p>Indique d'où tu pars pour voir le trajet en bus ou en tram, avec les prochains passages.</p>
-        <div class="linkrow" style="margin-top:10px"><button class="btn btn--vert btn--small" type="button" data-action="origin">Définir mon point de départ</button></div>`;
+        <div class="linkrow" style="margin-top:10px"><button class="btn btn--green btn--small" type="button" data-action="origin">Définir mon point de départ</button></div>`;
       return;
     }
     const future = slot.start.length > 10 && minutesBetween(nowParis(), slot.start) > 25;
@@ -977,7 +977,7 @@
         <p class="note">Donne un nom puis choisis l'adresse. Les lieux restent sur cet appareil ; une adresse n'est envoyée que pour calculer un trajet.</p>
       </div>
       <div class="linkrow">
-        <button class="btn btn--vert" type="button" data-action="gps">${ICONS.pin} Utiliser ma position GPS</button>
+        <button class="btn btn--green" type="button" data-action="gps">${ICONS.pin} Utiliser ma position GPS</button>
       </div>
       ${state.gps ? `<p class="note">Position GPS : ${esc(state.gps.label)}${prefs.useGps ? " (utilisée comme départ)" : ""}.</p>` : ""}
       <details class="car"${car.conso ? " open" : ""}><summary><strong>Ma voiture</strong> <span class="muted">(facultatif, pour le coût en essence)</span></summary>
@@ -1295,7 +1295,7 @@
   window.addEventListener("appinstalled", () => ($("#installBtn").hidden = true));
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
-  window.JCB = { state, prefs, matches, isWished, origin, cat, axeOf, hueOf, catIcon, esc, km, distance, nowParis, hour, wishButton };
+  window.JCB = { state, prefs, matches, isWished, origin, cat, axisOf, hueOf, catIcon, esc, km, distance, nowParis, hour, wishButton };
   document.body.dataset.mode = prefs.mode === "list" ? "list" : "explore";
   for (const b of document.querySelectorAll(".modeswitch button")) b.setAttribute("aria-pressed", String(b.dataset.mode === document.body.dataset.mode));
   if (prefs.useGps) locate({ silent: true });
