@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "scrape": "node src/aggregate.js",
+    "test": "node tests/smoke.mjs",
     "test:source": "node src/aggregate.js --only"
   },
   "engines": {
