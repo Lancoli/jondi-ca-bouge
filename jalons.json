@@ -83,16 +83,38 @@
       "texte": "N0 · sur GitHub, à jour (origin, 0 commit non poussé)",
       "pour": "github",
       "preuve": "1 commit(s) non poussé(s)",
+      "fait": true,
+      "auto": true,
+      "fait_le": "2026-11-27T00:44:15.240Z"
+    },
+    {
+      "id": "auto-licence",
+      "texte": "N1 · licence déclarée (fichier LICENSE)",
+      "pour": "licence",
+      "preuve": "LICENSE absent",
+      "fait": false,
+      "auto": true
+    },
+    {
+      "id": "auto-changelog",
+      "texte": "N1 · journal des versions (CHANGELOG.md)",
+      "pour": "changelog",
+      "preuve": "CHANGELOG.md absent",
       "fait": false,
       "auto": true
     }
   ],
   "etat": {
-    "date": "2026-11-26T22:58:38.219Z",
-    "niveau": null,
-    "prochain": "N0",
+    "date": "2026-11-27T00:44:15.240Z",
+    "niveau": "N0",
+    "prochain": "N1",
     "bloque": [
-      "github"
+      "liens",
+      "console",
+      "mobile",
+      "remplissage",
+      "licence",
+      "changelog"
     ],
     "humain": {},
     "criteres": {
@@ -104,15 +126,15 @@
         "type": "auto"
       },
       "github": {
-        "ok": false,
-        "preuve": "1 commit(s) non poussé(s)",
+        "ok": true,
+        "preuve": "Lancoli/jondi-ca-bouge.git",
         "niveau": "N0",
         "texte": "sur GitHub, à jour (origin, 0 commit non poussé)",
         "type": "auto"
       },
       "readme": {
         "ok": true,
-        "preuve": "7291 caractères",
+        "preuve": "7654 caractères",
         "niveau": "N0",
         "texte": "README : ce que c'est, comment le lancer (≥ 300 caractères)",
         "type": "auto"
