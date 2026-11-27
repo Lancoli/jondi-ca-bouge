@@ -1,6 +1,6 @@
 const DIJON = { lat: 47.322, lng: 5.0415 };
 
-// Distance à vol d'oiseau en mètres.
+// Distance as the crow flies, in metres.
 function distance(a, b) {
   const rad = Math.PI / 180;
   const dLat = (b.lat - a.lat) * rad;

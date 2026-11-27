@@ -1,6 +1,6 @@
-// Complète les événements pauvres en allant lire leur fiche : beaucoup de sources ne donnent en liste
-// qu'un titre et une date. On en tire le texte de présentation, et quand la page les expose proprement
-// (JSON-LD), l'heure et le tarif. Quota par passage et cache : la couverture monte au fil des actualisations.
+// Completes thin events by reading their detail page: many sources only list
+// a title and a date. It takes the presentation text, and when the page exposes them cleanly
+// (JSON-LD), the time and the price. Quota per run and cache: coverage grows over the refreshes.
 const cheerio = require("cheerio");
 const { get, pmap } = require("./lib/http");
 const { toLocal, parseFrTime } = require("./lib/dates");
@@ -9,7 +9,7 @@ const { strip } = require("./categories");
 
 const BUDGET = 150;
 const TTL = 10 * 86400;
-const THIN = 80; // en dessous, la description ne dit rien
+const THIN = 80; // below that, the description says nothing
 const NOISE = /cookie|newsletter|javascript|inscrivez-vous|mentions l[ée]gales|tous droits|connectez-vous|abonnez-vous|placement\s*:/i;
 const MONTHS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
 
@@ -20,7 +20,7 @@ function readPage(html) {
   const $ = cheerio.load(html);
   const ld = jsonLd(html, "Event")[0] || {};
   const meta = [$('meta[property="og:description"]').attr("content"), $('meta[name="description"]').attr("content")]
-    .map((s) => clean(s).replace(/^[\w.#, ]+\{[^}]*\}\s*/, "")) // certains sites laissent du CSS dans la balise
+    .map((s) => clean(s).replace(/^[\w.#, ]+\{[^}]*\}\s*/, "")) // some sites leave CSS inside the tag
     .sort((a, b) => b.length - a.length)[0];
   const short = [clean(ld.description), meta].sort((a, b) => b.length - a.length)[0] || "";
 
@@ -31,8 +31,8 @@ function readPage(html) {
     .filter((t) => t.length > 100 && !NOISE.test(t));
   const long = [...new Set(paragraphs)].slice(0, 4).join("\n\n");
 
-  // Les paragraphes ne sont retenus que s'ils prolongent bien le résumé officiel de la page ;
-  // sinon on risque de prendre des consignes de billetterie pour une présentation.
+  // Paragraphs are kept only if they really continue the page's official summary;
+  // otherwise ticketing instructions could be taken for a presentation.
   const sameText = short.length >= 40 && strip(long).includes(strip(short).slice(0, 40));
   const description = short.length < 120 || sameText ? (long.length > short.length ? long : short) : short;
 
@@ -48,7 +48,7 @@ function readPage(html) {
   };
 }
 
-// « samedi 10 octobre 2026 / 20h » : heure écrite juste après la date de l'événement.
+// "samedi 10 octobre 2026 / 20h": time written right after the event date.
 function timeNearDate(text, day) {
   const [, m, d] = day.split("-").map(Number);
   const re = new RegExp(`\\b0?${d}(?:er)?\\s+${MONTHS[m - 1]}(?:\\s+\\d{4})?[\\s/,|a:-]{0,6}(\\d{1,2}\\s?h\\s?\\d{0,2})`);
@@ -69,14 +69,14 @@ async function enrich(events, cache) {
       if (budget-- <= 0) return;
       page = await get(url, { timeout: 15000, retries: 0 }).then(readPage).catch(() => null);
       if (!page) return;
-      if (!e.timeHint) delete page.text; // le texte brut ne sert qu'à retrouver une heure
+      if (!e.timeHint) delete page.text; // the raw text is only used to find a time
       cache.set(`page:${url}`, page, TTL);
     }
     if (page.description.length > (e.description || "").length) e.description = page.description;
     if (!e.price && page.price) e.price = page.price;
     if (e.free == null && page.free) e.free = true;
 
-    // l'heure n'est reprise que pour un rendez-vous unique, et seulement si la page parle du même jour
+    // the time is taken only for a single date, and only if the page talks about the same day
     const only = e.occurrences.length === 1 ? e.occurrences[0] : null;
     if (only && !hasTime(only.start)) {
       if (page.start && dayOf(page.start) === only.start) only.start = page.start;

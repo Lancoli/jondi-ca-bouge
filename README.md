@@ -4,142 +4,140 @@
 [![qualité](https://github.com/Lancoli/jondi-ca-bouge/actions/workflows/qualite.yml/badge.svg)](https://github.com/Lancoli/jondi-ca-bouge/actions/workflows/qualite.yml) [![release](https://img.shields.io/github/v/release/Lancoli/jondi-ca-bouge?include_prereleases&label=version)](https://github.com/Lancoli/jondi-ca-bouge/releases) [![Conventional Commits](https://img.shields.io/badge/commits-conventionnels%20%2B%20gitmoji-ff69b4)](https://www.conventionalcommits.org/fr/) [![dernier commit](https://img.shields.io/github/last-commit/Lancoli/jondi-ca-bouge)](https://github.com/Lancoli/jondi-ca-bouge/commits)
 <!-- /badges -->
 
-Tout ce qui se passe à Dijon, au même endroit, filtré selon tes goûts, avec le trajet Divia pour t'y rendre.
+Everything happening in Dijon, in one place, filtered by your tastes, with the Divia trip to get there.
+The interface is in French (local audience); code and docs are in English.
 
 ```bash
 npm install
 npm start          # http://localhost:4021
 ```
 
-Au premier lancement, le serveur passe sur toutes les sources (30 à 60 s), puis recommence toutes les
-trois heures. Le bouton « Actualiser » de l'interface force un passage.
+On first run, the server goes through every source (30 to 60 s), then again every three hours.
+The interface's "Actualiser" button forces a run.
 
 ## Sources
 
-| Source | Méthode | Ce qu'elle apporte |
+| Source | Method | What it brings |
 | --- | --- | --- |
-| OpenAgenda | API open data (OpenDataSoft, sans clé) | associations, festivals nationaux, agendas partagés |
-| Ville de Dijon | page agenda + fiches | programmation municipale, lieux et tarifs |
-| Musées de Dijon | page agenda + fiches | visites, ateliers, expositions |
-| Jondi | pages jour + API des lieux | bars, concerts, ateliers, vide-greniers |
-| Dijoncter | flux iCal | agenda militant et alternatif |
-| Bibliothèques de Dijon | flux RSS | lectures, jeux, ateliers gratuits |
-| Office de tourisme | pages agenda | fêtes, marchés, visites, alentours |
-| Zénith de Dijon | API WordPress | grands concerts, séances |
-| La Vapeur | données Nuxt de la page programme | musiques actuelles |
-| Opéra de Dijon | calendrier de saison | opéra, musique, danse |
-| Théâtre Dijon Bourgogne | saison paginée | théâtre |
-| Le Cèdre (Chenôve) | page programmation | spectacles |
-| Atheneum | page programmation | campus, arts-sciences |
-| Université Bourgogne Europe | page événements | colloques, conférences |
-| Eventbrite, Meetup | JSON-LD schema.org | rencontres, ateliers, pro |
+| OpenAgenda | open data API (OpenDataSoft, no key) | non-profits, national festivals, shared agendas |
+| City of Dijon | agenda page + detail pages | municipal programme, venues and prices |
+| Dijon museums | agenda page + detail pages | tours, workshops, exhibitions |
+| Jondi | day pages + venue API | bars, concerts, workshops, car-boot sales |
+| Dijoncter | iCal feed | activist and alternative agenda |
+| Dijon libraries | RSS feed | readings, games, free workshops |
+| Tourist office | agenda pages | festivals, markets, tours, surroundings |
+| Zénith de Dijon | WordPress API | big concerts, sessions |
+| La Vapeur | Nuxt data of the programme page | contemporary music |
+| Opéra de Dijon | season calendar | opera, music, dance |
+| Théâtre Dijon Bourgogne | paginated season | theatre |
+| Le Cèdre (Chenôve) | programme page | shows |
+| Atheneum | programme page | campus, art-science |
+| Université Bourgogne Europe | events page | symposia, lectures |
+| Eventbrite, Meetup | schema.org JSON-LD | meet-ups, workshops, professional |
 
-Une source en panne n'arrête pas les autres : l'onglet « Sources » montre ce que chacune a rendu au dernier
-passage, et permet de masquer celles qui ne t'intéressent pas.
+A broken source does not stop the others: the "Sources" tab shows what each one returned on the last run,
+and lets you hide the ones you do not care about.
 
-Un même événement annoncé par plusieurs sources n'apparaît qu'une fois ; ses sources sont listées sur la fiche.
+An event announced by several sources appears only once; its sources are listed on its sheet.
 
-### Ajouter une source
+### Add a source
 
-Un fichier dans `src/sources/`, déclaré dans `src/sources/index.js` :
+A file in `src/sources/`, declared in `src/sources/index.js`:
 
 ```js
 module.exports = {
-  id: "masource", name: "Ma source", site: "https://…", kind: "Salle",
+  id: "mysource", name: "My source", site: "https://…", kind: "Salle",
   async fetch(ctx) {
     return [{ title, url, start: "2026-10-10T20:30", end, venue, address, city, lat, lng, tags: [], price, image, description }];
   },
 };
 ```
 
-`start` est une heure de Paris (`YYYY-MM-DD` si l'heure est inconnue). Tout le reste est facultatif : le
-lieu est géocodé, la catégorie déduite des étiquettes et du titre. Pour tester une source seule :
+`start` is a Paris time (`YYYY-MM-DD` when the time is unknown). Everything else is optional: the place is
+geocoded, the category inferred from the tags and the title. To test one source alone:
 
 ```bash
-node src/aggregate.js --only masource
+node src/aggregate.js --only mysource
 ```
 
-Une page qui expose ses événements en JSON-LD se branche en trois lignes avec `jsonld.js`.
+A page that exposes its events as JSON-LD plugs in with three lines using `jsonld.js`.
 
-## Trajets
+## Trips
 
-- **Divia** : horaires théoriques (GTFS) et prochains passages en temps réel (GTFS-RT), publiés en open data
-  sur transport.data.gouv.fr. Le calcul propose les trajets directs, ou avec une correspondance quand elle
-  fait gagner du temps, soit « pour arriver à l'heure », soit « en partant maintenant ».
-- **Google Maps** : liens d'itinéraire pré-remplis (transports, à pied, à vélo, en voiture) depuis ton point
-  de départ.
+- **Divia**: scheduled timetables (GTFS) and real-time next departures (GTFS-RT), published as open data on
+  transport.data.gouv.fr. The calculation offers direct trips, or with one transfer when it saves time,
+  either "to arrive on time" or "leaving now".
+- **Google Maps**: pre-filled route links (transit, walking, cycling, driving) from your starting point.
+- **Walking, cycling, driving**: duration and distance on the real street network (OpenStreetMap, FOSSGIS's
+  public Valhalla server). A mode that does not answer is hidden rather than estimated.
 
-- **À pied, à vélo, en voiture** : durée et distance sur le vrai réseau de rues (OpenStreetMap, serveur
-  Valhalla public de FOSSGIS). Un mode qui ne répond pas est masqué plutôt qu'estimé.
+The starting point is your GPS position or one of your **places** (Home, Work…), chosen in "D'où pars-tu ?"
+and switchable directly on the sheet. Everything stays in the browser (`localStorage`).
 
-Le point de départ est ta position GPS ou l'un de tes **lieux** (Maison, Travail…), choisis dans « D'où
-pars-tu ? » et basculables directement sur la fiche. Tout reste dans le navigateur (`localStorage`).
+The calculation lives in `src/trips/` (`GET /api/trips?from=lat,lng&to=lat,lng&modes=walk,bike,transit,car`):
+- `index.js`: the mode registry `{ id, label, plan(from, to) }`; adding one = one entry;
+- `costs.js`: cost estimators per mode. Fuel is wired (`consumption` and `price`, entered in "Ma voiture");
+  a possible next step: read the pump price from prix-carburants.gouv.fr.
 
-Le calcul vit dans `src/trajets/` (`GET /api/trajets`) :
-- `index.js` : registre des modes `{ id, label, plan(from, to) }` — en ajouter un = une entrée ;
-- `couts.js` : estimateurs de coût par mode. L'essence est branchée (conso et prix saisis dans « Ma
-  voiture ») ; prochaine étape possible : lire le prix à la pompe sur prix-carburants.gouv.fr.
+## App
 
-## Appli
+The interface installs as an app (PWA): home-screen icon, full screen, opens offline.
 
-L'interface s'installe comme une appli (PWA) : icône sur l'écran d'accueil, plein écran, ouverture hors
-connexion.
+- **Android, Chrome, Edge**: the "Installer l'appli" button appears at the top when the browser allows it
+  (or menu ⋮ → "Install app").
+- **iPhone**: Safari → Share → "Add to Home Screen".
 
-- **Android, Chrome, Edge** : le bouton « Installer l'appli » apparaît en haut quand le navigateur le
-  permet (ou menu ⋮ → « Installer l'application »).
-- **iPhone** : Safari → Partager → « Sur l'écran d'accueil ».
+Offline, the app shows the last agenda received and says so in the status bar. Divia trips, address search
+and refresh stay online only: yesterday's trip would be wrong.
 
-Hors connexion, l'appli montre le dernier agenda reçu et le dit dans la barre d'état. Trajets Divia,
-recherche d'adresse et actualisation restent en ligne seulement : un trajet d'hier serait faux.
+Installation requires a page served over HTTPS (or `localhost`). On the phone, go through the portfolio
+deployed behind HTTPS, not `http://<pc-ip>:4021`. Files involved: `public/manifest.webmanifest`,
+`public/sw.js` (change `CACHE` to force a cache update), `public/assets/icons/`.
 
-L'installation demande une page servie en HTTPS (ou `localhost`). Sur le téléphone, il faut donc passer
-par le portfolio déployé derrière HTTPS, pas par `http://<ip-du-pc>:4021`. Fichiers concernés :
-`public/manifest.webmanifest`, `public/sw.js` (changer `CACHE` pour forcer la mise à jour du cache),
-`public/assets/icons/`.
+## Calendar
 
-## Agenda
+Each sheet offers "Ajouter à mon agenda": a pre-filled Google Calendar link, or an `.ics` file for other
+calendars (Apple, Outlook, Proton…). No account is linked to the app. When the source has no time, the event
+is written as all-day; without an end time, it lasts one hour and the note says so.
 
-Chaque fiche propose « Ajouter à mon agenda » : un lien Google Agenda pré-rempli, ou un fichier `.ics`
-pour les autres agendas (Apple, Outlook, Proton…). Aucun compte n'est relié à l'appli. Sans heure dans la
-source, l'événement est inscrit en journée entière ; sans heure de fin, il dure une heure et la note le dit.
-
-## Organisation
+## Layout
 
 ```
-server.js            serveur HTTP local, API et fichiers statiques
-src/aggregate.js     orchestration : sources -> normalisation -> géocodage -> data/events.json
-src/normalize.js     séances, périodes, dédoublonnage entre sources
-src/categories.js    classement sur trois axes (thème, format, public) et conditions pratiques
-src/enrich.js        lecture des fiches pour compléter présentation, heure et tarif
-src/geocode.js       lieux Jondi, Base Adresse Nationale, OpenStreetMap
-src/divia.js         réseau Divia : arrêts proches, itinéraires, temps réel
-src/sources/         un adaptateur par source
-public/              interface : index.html, sw.js et le manifeste à la racine (leur portée),
-  css/ js/             la feuille de style et les scripts (sans dépendance)
-  assets/icons/        icônes de l'appli installée
-  vendor/              Leaflet et la typo, servis en local
-  retours/             le widget « Dire à Claude » (recopié par retours/installer.mjs)
-docs/                notes de travail (NOTES.md) et les fournisseurs de données (PROVIDERS.md)
-data/                caches (créé au premier lancement, non versionné)
+server.js            local HTTP server, API and static files
+src/aggregate.js     orchestration: sources -> normalisation -> geocoding -> data/events.json
+src/normalize.js     sessions, periods, de-duplication across sources
+src/categories.js    classification on three axes (theme, format, public) and practical conditions
+src/enrich.js        reads detail pages to complete presentation, time and price
+src/geocode.js       Jondi venues, Base Adresse Nationale, OpenStreetMap
+src/divia.js         Divia network: nearby stops, routes, real time
+src/trips/           trip comparison (walk, bike, transit, car) and costs
+src/sources/         one adapter per source
+public/              interface: index.html, sw.js and the manifest at the root (their scope),
+  css/ js/             the stylesheet and the scripts (no dependency)
+  assets/icons/        icons of the installed app
+  vendor/              Leaflet and the font, served locally
+  retours/             the "Dire à Claude" widget (copied by retours/installer.mjs)
+docs/                work notes (NOTES.md) and data providers (PROVIDERS.md)
+data/                caches (created on first run, not versioned)
 ```
 
-## Limites connues
+## Known limits
 
-- Les sites sans API changent leur balisage sans prévenir : l'adaptateur concerné rend alors zéro
-  événement et l'onglet « Sources » le signale.
-- Les fiches de dijon.fr sont lues par lots de 140 : il faut deux ou trois passages pour que tous les
-  événements lointains aient leur lieu et leur heure.
-- Le calcul Divia s'arrête à une correspondance ; au-delà, passer par le lien Google Maps.
-- Projet personnel, sans lien avec la Ville de Dijon ni Keolis.
+- Sites without an API change their markup without notice: the adapter then returns zero events and the
+  "Sources" tab says so.
+- dijon.fr detail pages are read in batches of 140: it takes two or three runs for every distant event to get
+  its place and time.
+- The Divia calculation stops at one transfer; beyond that, use the Google Maps link.
+- Personal project, unrelated to the City of Dijon or Keolis.
 
 ## Interface
 
-Thème sombre unique : fond presque noir, panneaux cernés d'un liseré fin, violet `#a528f2` pour ce qui est
-actif. Chaque catégorie a sa teinte et son pictogramme (`CAT_LOOK` dans `public/js/app.js`) : la teinte donne
-le liseré des cartes « Ça commence bientôt » et la couleur des étiquettes. La police Outfit est servie en
-local (`public/vendor/fonts/`).
+A single dark theme: an almost black background, panels outlined by a thin edging, purple `#a528f2` for what
+is active. Each category has its hue and pictogram (`CAT_LOOK` in `public/js/app.js`): the hue gives the edging
+of the "Ça commence bientôt" cards and the colour of the tags. The Outfit font is served locally
+(`public/vendor/fonts/`).
 
-Le panneau de filtres réunit les thèmes (rangée de pastilles), puis « Quand ? », « Où ? », « Type » (les
-formats : atelier, visite, festival…) et « Source ». « Accès rapide » bascule l'agenda entre une ligne par
-événement et des cartes détaillées. Le temps de trajet affiché sur une ligne est une estimation (à pied
-jusqu'à 2 km, à vélo au-delà) ; le calcul Divia exact est sur la fiche.
+The filter panel gathers the themes (a row of chips), then "Quand ?", "Où ?", "Type" (the formats: workshop,
+tour, festival…) and "Source". "Accès rapide" switches the agenda between one row per event and detailed cards.
+The travel time shown on a row is an estimate (walking up to 2 km, cycling beyond); the exact Divia
+calculation is on the sheet.

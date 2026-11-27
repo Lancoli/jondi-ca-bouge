@@ -1,52 +1,50 @@
-# Notes de projet
+# Project notes
 
-## Jondi : référencement seul avec citation visible (à décider)
+## Jondi: listing only, with a visible citation (to be decided)
 
-Noté le 10 octobre 2026. Rien n'est implémenté, on y revient plus tard.
+Noted on 10 October 2026. Nothing is implemented; to be revisited later.
 
-### L'idée
+### The idea
 
-Garder les événements venus de Jondi, mais en simple référencement : titre, date, lieu, thème, puis un
-bouton bien visible « Consulter l'événement sur Jondi.fr ». Ni leur texte de présentation, ni leur image.
+Keep the events that come from Jondi, but as a plain listing: title, date, place, theme, then a clearly
+visible "Consulter l'événement sur Jondi.fr" button. Neither their presentation text nor their image.
 
-### Pourquoi
+### Why
 
-Jondi pèse lourd sur le court terme (mesure du 10 octobre, 814 événements) :
+Jondi weighs heavily in the short term (measured on 10 October, 814 events):
 
-| Horizon | Événements | Connus par Jondi seul |
+| Horizon | Events | Known only through Jondi |
 | --- | --- | --- |
-| 7 jours | 145 | 58 (40 %) |
-| 21 jours | 335 | 126 (38 %) |
-| Au-delà | 433 | 0 |
+| 7 days | 145 | 58 (40 %) |
+| 21 days | 335 | 126 (38 %) |
+| Beyond | 433 | 0 |
 
-Sans lui, on perd surtout les festivals (57 %), les jeux (46 %), les soirées (40 %), les marchés, le
-sport et la solidarité (environ 30 % chacun). Tout repose sur 45 lieux : la liste est dans
-`data/leads-jondi.json`.
+Without it, we mostly lose festivals (57 %), games (46 %), evenings out (40 %), markets, sport and
+solidarity (about 30 % each). It all rests on 45 venues: the list is in `data/leads-jondi.json`.
 
-### Ce que la citation change, et ce qu'elle ne change pas
+### What the citation changes, and what it does not
 
-- Elle fait de l'app un apporteur de trafic plutôt qu'un substitut. C'est le critère qui compte en droit
-  des bases de données : la reprise nuit-elle à l'investissement du producteur ?
-- Elle ne vaut pas autorisation. Jondi n'a publié aucune licence de réutilisation ; un métamoteur qui
-  renvoyait vers ses sources a déjà été condamné en Europe parce qu'il rendait la visite inutile.
-- Pour un usage personnel, la question ne se pose pas. Elle se pose dès qu'il y a diffusion publique,
-  et davantage s'il y a un revenu.
+- It makes the app a traffic provider rather than a substitute. That is the test that matters in database
+  law: does the reuse harm the producer's investment?
+- It is not a permission. Jondi has published no reuse licence; a meta-search engine that linked back to its
+  sources has already been convicted in Europe because it made the visit pointless.
+- For personal use, the question does not arise. It arises as soon as there is public distribution, and more
+  so if there is revenue.
 
-### Ce qu'il faudrait faire dans le code
+### What the code would need
 
-1. Un mode « référencement seul » réglable par source, appliqué à Jondi : pas de description, pas
-   d'image, bouton principal vers la source.
-2. Arrêter de lire les fiches Jondi pour en recopier la présentation (`src/enrich.js` le fait aujourd'hui).
-3. Compter les clics sortants par source, pour avoir un chiffre à montrer.
+1. A "listing only" mode, set per source, applied to Jondi: no description, no image, the main button to the source.
+2. Stop reading Jondi's detail pages to copy their presentation (`src/enrich.js` does it today).
+3. Count outgoing clicks per source, to have a figure to show.
 
-### La suite possible
+### Possible next step
 
-Écrire à Jondi avec ce chiffre : « je référence vos événements et je vous envoie du monde ». S'ils
-acceptent, c'est un accord écrit ; s'ils refusent, on retire la source. En parallèle, aller chercher les
-45 lieux à la source réduit la dépendance quoi qu'ils répondent (voir `PROVIDERS.md`).
+Write to Jondi with that figure: "I list your events and I send you people". If they accept, it is a written
+agreement; if they refuse, the source is removed. Meanwhile, going to the 45 venues directly reduces the
+dependency whatever they answer (see `PROVIDERS.md`).
 
-### État actuel
+### Current state
 
-- Jondi est relevé deux fois par jour au plus, son répertoire de lieux une fois par semaine.
-- Les bibliothèques de Dijon interdisent les robots (`robots.txt`) et la source passe encore par un
-  agent de navigateur : à retirer avant toute diffusion publique.
+- Jondi is collected at most twice a day, its venue directory once a week.
+- Dijon libraries forbid robots (`robots.txt`) and the source still goes through a browser agent: to remove
+  before any public distribution.

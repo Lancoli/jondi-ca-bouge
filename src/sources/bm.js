@@ -1,4 +1,4 @@
-// Bibliothèque municipale de Dijon : le portail expose son agenda en RSS (l'adresse du flux est lue sur l'accueil).
+// Dijon municipal library: the portal exposes its agenda as RSS (the feed address is read from the home page).
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { clean, absolute } = require("../lib/text");
@@ -24,7 +24,7 @@ module.exports = {
       const item = $(el);
       const body = cheerio.load(item.find("description").text());
       if (/annul[ée]/i.test(body(".session-short h4").text())) return;
-      // "Le 10/10/2026 de 10:00 à 12:00" ou "Du 01/10/2026 au 31/10/2026"
+      // "Le 10/10/2026 de 10:00 à 12:00" or "Du 01/10/2026 au 31/10/2026"
       const when = clean(body(".session-date").html());
       const days = [...when.matchAll(/\d{2}\/\d{2}\/\d{4}/g)].map((m) => day(m[0]));
       const times = [...when.matchAll(/\b(\d{2}):(\d{2})\b/g)].map((m) => `${m[1]}:${m[2]}`);

@@ -1,12 +1,12 @@
-// Classement des activités selon trois axes indépendants, plutôt qu'une seule liste à plat :
-//   - thème  : de quoi ça parle (musique, nature, luttes…)
-//   - format : comment on y prend part (assister, pratiquer, visiter, chiner…)
-//   - public : à qui ça s'adresse en particulier (familles, étudiants, seniors)
-// Un événement reçoit au plus deux thèmes, un ou deux formats et ses publics.
-// Les motifs s'appliquent à un texte sans accents, en minuscules.
-// `axe` reprend les trois couleurs de la charte de la Ville (vert Arquebuse, rose Cassissine, jaune Miel).
+// Activities are classified along three independent axes, rather than one flat list:
+//   - theme  : what it is about (music, nature, struggles…)
+//   - format : how one takes part (attend, practise, visit, bargain-hunt…)
+//   - public : who it is meant for in particular (families, students, seniors)
+// An event gets at most two themes, one or two formats, and its publics.
+// Patterns apply to lowercase text without accents.
+// `axe` uses the three colours of the City's brand guide (Arquebuse green, Cassissine pink, Honey yellow).
 const CATEGORIES = [
-  // --- thèmes ---
+  // --- themes ---
   { id: "musique", kind: "theme", label: "Musique", axe: "rose", re: /\b(concerts?|musiques?|music|dj|electro|rock|jazz|rap|hip.?hop|chanson|chorale|choeur|orchestre|recital|opera|symphoni\w*|fanfare|blues|folk|techno|karaoke|scene ouverte|jam|punk|metal|reggae|flamenco|piano|pop)\b/ },
   { id: "spectacle", kind: "theme", label: "Scène", axe: "rose", re: /\b(theatre|spectacles?|danse|cirque|humour|one.?(wo)?man|stand.?up|impro\w*|marionnettes?|comedie|magie|cabaret|performance|sortie de residence)\b/ },
   { id: "expo", kind: "theme", label: "Expo & arts visuels", axe: "rose", re: /\b(expo\w*|vernissage|arts? visuels?|galerie|photograph\w*|peinture|sculpture|art contemporain|street.?art|beaux.?arts)\b/ },
@@ -26,7 +26,7 @@ const CATEGORIES = [
   { id: "atelier", kind: "format", label: "Atelier", axe: "rose", re: /\b(ateliers?|stage|initiation|workshop|masterclass|fabrication|diy|couture|tricot|poterie|ceramique|pratique musicale)\b/ },
   { id: "conference", kind: "format", label: "Rencontre & conférence", axe: "rose", re: /\b(conferences?|rencontres?|debats?|table ronde|colloque|seminaire|causerie|discussion|cafe.?philo|journees? d.?etudes?)\b/ },
   { id: "visite", kind: "format", label: "Visite & balade", axe: "jaune", re: /\b(visites?|balades?|guidee?s?|promenade|parcours)\b/ },
-  // « Fête de la science » n'est pas une fête, et un festival est un format à part
+  // "Fête de la science" is not a party, and a festival is a format of its own
   { id: "fete", kind: "format", label: "Soirée & fête", axe: "jaune", re: /\b(fetes?(?! de la science)|clubbing|afterwork|bal|guinguette|apero\w*|dansant\w*|latino|dans les bars|bars?|boum|soiree (etudiante|dansante|clubbing|karaoke))\b/ },
   { id: "festival", kind: "format", label: "Festival", axe: "jaune", re: /\b(festivals?|fest|fete de la science|journees europeennes)\b/ },
   { id: "marche", kind: "format", label: "Marché & troc", axe: "jaune", re: /\b(vide.?greniers?|brocantes?|marches?|braderie|puces|gratiferia|troc|bourse aux|foire)\b/ },
@@ -39,9 +39,9 @@ const CATEGORIES = [
 const strip = (s) => String(s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 const hits = (text) => CATEGORIES.filter((c) => c.re.test(text));
 
-// Chaque indice pèse selon sa fiabilité : une étiquette de la source vaut plus qu'un mot du titre, qui
-// vaut plus qu'une mention dans la description. Une étiquette fourre-tout (« Spectacles & concerts »)
-// désigne plusieurs catégories à la fois : elle est partagée entre elles au lieu de compter plein pot.
+// Each clue weighs by its reliability: a source tag is worth more than a word in the title, which
+// is worth more than a mention in the description. A catch-all tag ("Spectacles & concerts")
+// names several categories at once: it is shared between them instead of counting in full.
 function categorize({ tags = [], title = "", description = "", fallback }) {
   const score = new Map();
   const add = (c, n) => score.set(c.id, (score.get(c.id) || 0) + n);
@@ -50,14 +50,14 @@ function categorize({ tags = [], title = "", description = "", fallback }) {
     for (const c of found) add(c, found.length >= 3 ? 1 : found.length === 2 ? 2 : 3);
   }
   for (const c of hits(strip(title))) add(c, 2);
-  // en description, une catégorie citée plusieurs fois départage celles qui ne le sont qu'une fois
+  // in the description, a category mentioned several times wins over those mentioned once
   const body = strip(description);
   for (const c of hits(body)) add(c, 1 + Math.min(0.9, (body.match(new RegExp(c.re.source, "g")).length - 1) * 0.3));
 
   const ranked = (kind) =>
     CATEGORIES.filter((c) => c.kind === kind && score.has(c.id)).sort((a, b) => score.get(b.id) - score.get(a.id));
 
-  // thèmes : les deux mieux étayés ; une simple mention en description ne suffit que faute de mieux
+  // themes: the two best supported; a mere mention in the description only counts for lack of better
   const themes = ranked("theme");
   const top = themes.length ? score.get(themes[0].id) : 0;
   let picked = themes.filter((c) => score.get(c.id) >= Math.max(2, top - 2)).slice(0, 2);
@@ -71,7 +71,7 @@ function categorize({ tags = [], title = "", description = "", fallback }) {
   return ids;
 }
 
-// Conditions pratiques que les sources donnent en clair mais sans champ dédié.
+// Practical conditions the sources state plainly but without a dedicated field.
 function facets({ title = "", description = "", price = "", tags = [] }) {
   const head = strip(`${title} ${tags.join(" ")}`);
   const text = strip(`${title} ${description} ${price} ${tags.join(" ")}`);
@@ -82,7 +82,7 @@ function facets({ title = "", description = "", price = "", tags = [] }) {
   else if (range) out.ageMin = +range[1];
   if (/\b(sur inscription|inscription (obligatoire|requise|necessaire)|sur reservation|reservation (obligatoire|indispensable|conseillee|requise)|places limitees)\b/.test(text)) out.booking = true;
   if (/\b(prix libre|participation libre)\b/.test(text)) out.priceLibre = true;
-  // le statut ne se lit que dans le titre : « complet » dans une description parle d'autre chose
+  // the status is read from the title only: "complet" in a description talks about something else
   const status = head.match(/\b(annule|complet|reporte)e?s?\b/);
   if (status) out.status = { annule: "Annulé", complet: "Complet", reporte: "Reporté" }[status[1]];
   return out;

@@ -1,107 +1,107 @@
-# Fournisseurs de données possibles
+# Possible data providers
 
-Analyse du 10 octobre 2026. « Vérifié » signifie que la source a été interrogée ce jour-là depuis cette
-machine ; le reste vient de la documentation publique et reste à confirmer avant de s'engager.
+Analysis of 10 October 2026. "Checked" means the source was queried that day from this machine; the rest
+comes from public documentation and remains to be confirmed before committing to it.
 
-## En bref
+## At a glance
 
-1. **DATAtourisme** est le meilleur ajout : base nationale ouverte, 641 événements en Côte-d'Or sur
-   166 communes, avec adresse et coordonnées. C'est aussi la porte d'entrée du rural.
-2. **Quatre mairies de la métropole** exposent leur agenda par une API ouverte, branchable en peu de travail.
-3. **Deux lieux** (Bistrot de la Scène, CROUS) exposent la même API standard.
-4. Pour le tissu associatif et les bars, il n'y a pas de base ouverte : il faut **HelloAsso** (API à clé)
-   et la **veille Instagram**.
-5. Les grandes plateformes fermées (Eventbrite, Meetup, Infoconcert, Facebook) n'offrent pas de voie utilisable.
+1. **DATAtourisme** is the best addition: an open national database, 641 events in Côte-d'Or across
+   166 municipalities, with address and coordinates. It is also the way into the countryside.
+2. **Four town halls of the metro area** expose their agenda through an open API, pluggable with little work.
+3. **Two venues** (Bistrot de la Scène, CROUS) expose the same standard API.
+4. For non-profits and bars, there is no open database: it takes **HelloAsso** (keyed API) and
+   **Instagram monitoring**.
+5. The big closed platforms (Eventbrite, Meetup, Infoconcert, Facebook) offer no usable path.
 
-## 1. Bases ouvertes, branchables tout de suite
+## 1. Open databases, pluggable right away
 
-| Fournisseur | Ce que ça apporte | Accès | Licence | État |
+| Provider | What it brings | Access | Licence | State |
 | --- | --- | --- | --- | --- |
-| **DATAtourisme** | Fêtes, marchés, visites, sorties nature, dégustations dans tout le département. 641 événements en Côte-d'Or, dont 102 à Dijon, 91 à Beaune, 17 à Talant, et 166 communes en tout | Fichier CSV régional (28 Mo), mis à jour chaque jour sur data.gouv.fr | Licence Ouverte | Vérifié |
-| **OpenAgenda, API directe** | Plus frais et plus complet que l'export utilisé aujourd'hui (âge, inscription, accessibilité). 120 événements à 30 km, 160 dans le département | API gratuite, clé à demander | Licence ouverte sur les agendas publics | Export vérifié, API non testée (pas de clé) |
-| **Chevigny-Saint-Sauveur** | Agenda municipal | API « The Events Calendar » | Organisme public | Vérifié |
-| **Marsannay-la-Côte** | Agenda municipal | API WordPress, type `event` | Organisme public | Vérifié |
-| **Saint-Apollinaire** | Agenda municipal | API WordPress, type `event` | Organisme public | Vérifié |
-| **Fontaine-lès-Dijon** | Agenda municipal | API WordPress, type `evenement` | Organisme public | Vérifié |
+| **DATAtourisme** | Festivals, markets, tours, nature outings, tastings across the département. 641 events in Côte-d'Or, 102 in Dijon, 91 in Beaune, 17 in Talant, 166 municipalities in all | Regional CSV file (28 MB), updated daily on data.gouv.fr | Licence Ouverte | Checked |
+| **OpenAgenda, direct API** | Fresher and fuller than the export used today (age, registration, accessibility). 120 events within 30 km, 160 in the département | Free API, key to request | Open licence on public agendas | Export checked, API not tested (no key) |
+| **Chevigny-Saint-Sauveur** | Municipal agenda | "The Events Calendar" API | Public body | Checked |
+| **Marsannay-la-Côte** | Municipal agenda | WordPress API, type `event` | Public body | Checked |
+| **Saint-Apollinaire** | Municipal agenda | WordPress API, type `event` | Public body | Checked |
+| **Fontaine-lès-Dijon** | Municipal agenda | WordPress API, type `evenement` | Public body | Checked |
 
-Remarques :
+Notes:
 
-- DATAtourisme est la source que l'Office de tourisme, Bourgogne Tourisme et « La Côte-d'Or j'adore »
-  affichent déjà. La brancher permet de **retirer le scraping de l'Office de tourisme** et de gagner des
-  adresses précises, alors qu'aujourd'hui presque aucun de ses événements n'a d'itinéraire.
-- Sur OpenAgenda, les agendas les plus actifs autour de Dijon sont France Travail (53 événements),
-  La Vapeur (18), la Semaine de l'industrie (13), **Shotgun** (10) et les cinémas d'art et essai. Shotgun
-  y publie donc ses soirées : inutile de scraper son site, qui bloque d'ailleurs les robots.
+- DATAtourisme is the source the tourist office, Bourgogne Tourisme and "La Côte-d'Or j'adore" already
+  display. Plugging it in lets us **drop the tourist office scraping** and gain precise addresses, whereas
+  today almost none of its events have a route.
+- On OpenAgenda, the most active agendas around Dijon are France Travail (53 events), La Vapeur (18), the
+  Semaine de l'industrie (13), **Shotgun** (10) and the art-house cinemas. So Shotgun publishes its nights
+  there: no need to scrape its site, which blocks robots anyway.
 
-## 2. Mairies et lieux à lire en HTML
+## 2. Town halls and venues to read as HTML
 
-Pas d'API, mais des pages d'agenda publiques et aucun refus dans `robots.txt` (vérifié).
+No API, but public agenda pages and no refusal in `robots.txt` (checked).
 
-| Source | Page | Intérêt |
+| Source | Page | Interest |
 | --- | --- | --- |
-| **Talant** | liste d'événements sur le site | Couvre **L'Écrin**, premier lieu de la liste Jondi (6 événements) |
-| **Chenôve** | `/agenda` | Complète Le Cèdre |
+| **Talant** | event list on the site | Covers **L'Écrin**, the first venue of the Jondi list (6 events) |
+| **Chenôve** | `/agenda` | Complements Le Cèdre |
 | **Quetigny** | `/sortir` | Espace Mendès-France, La Parenthèse |
-| **Longvic** | site WordPress | Agenda municipal |
-| **Bistrot de la Scène** | API « The Events Calendar » | Jondi y ajoute 6 dates que les autres sources n'ont pas |
-| **CROUS BFC** | API « The Events Calendar » | Vie étudiante |
-| **Un Singe en Hiver** | `/programmation` | 4 événements exclusifs à Jondi |
-| **La Minoterie** | `/agenda` | Jeune public |
-| **Latitude 21** | `/agenda` | Architecture, environnement |
-| **Consortium Museum** | site Drupal | Art contemporain |
-| **DFCO, JDA** | calendriers des matchs | Sport |
+| **Longvic** | WordPress site | Municipal agenda |
+| **Bistrot de la Scène** | "The Events Calendar" API | Jondi adds 6 dates the other sources lack |
+| **CROUS BFC** | "The Events Calendar" API | Student life |
+| **Un Singe en Hiver** | `/programmation` | 4 events only Jondi has |
+| **La Minoterie** | `/agenda` | Young audiences |
+| **Latitude 21** | `/agenda` | Architecture, environment |
+| **Consortium Museum** | Drupal site | Contemporary art |
+| **DFCO, JDA** | match calendars | Sport |
 
-Pour les lieux privés, un mot aux équipes avant de publier : ils ont intérêt à être relayés.
+For private venues, a word to the teams before publishing: being relayed is in their interest.
 
-## 3. API officielles, avec clé et conditions
+## 3. Official APIs, with a key and conditions
 
-| Fournisseur | Ce que ça apporte | Conditions | Avis |
+| Provider | What it brings | Conditions | Opinion |
 | --- | --- | --- | --- |
-| **HelloAsso** | Événements des associations : stages, repas, lotos, vide-greniers, billetteries solidaires. C'est le tissu que Jondi couvre et que les bases ouvertes n'ont pas | API v5 avec recherche dans l'annuaire, identifiants à demander. Le site public refuse les robots (403 vérifié) | **À creuser en priorité** pour l'associatif et le rural. Conditions d'accès à l'annuaire non vérifiées |
-| **Ticketmaster** | Grands spectacles, prix, lien de billetterie | Clé gratuite, 5 000 appels par jour, règles d'affichage de la marque | Surtout des doublons du Zénith. Utile pour les prix, pas pour la couverture |
-| **Instagram (Business Discovery)** | Les annonces des bars, collectifs et tiers-lieux, qui ne sont nulle part ailleurs | Compte professionnel et application Meta ; ne lit que les comptes professionnels publics ; passage en revue par Meta pour un usage au-delà des tests | La seule voie officielle vers Instagram. Le texte est libre : il faut un LLM pour en extraire date et lieu, puis une validation humaine |
-| **Mobilizon (keskonfai.fr)** | 601 événements trouvés autour de Dijon | API ouverte, sans clé (vérifié) | Les premiers résultats sont des spectacles du Zénith : c'est lui-même un agrégateur. Provenance à examiner avant usage |
+| **HelloAsso** | Non-profit events: courses, meals, lotteries, car-boot sales, solidarity ticketing. The fabric Jondi covers and the open databases lack | API v5 with directory search, credentials to request. The public site refuses robots (403 checked) | **Dig into first** for non-profits and the countryside. Directory access conditions not checked |
+| **Ticketmaster** | Big shows, prices, ticketing link | Free key, 5,000 calls a day, brand display rules | Mostly duplicates of the Zénith. Useful for prices, not for coverage |
+| **Instagram (Business Discovery)** | Announcements from bars, collectives and third places, found nowhere else | Professional account and a Meta app; reads only public professional accounts; Meta review for use beyond testing | The only official path to Instagram. The text is free-form: an LLM is needed to extract date and place, then a human check |
+| **Mobilizon (keskonfai.fr)** | 601 events found around Dijon | Open API, no key (checked) | The first results are Zénith shows: it is itself an aggregator. Provenance to examine before use |
 
-## 4. À écarter ou à ne prendre qu'avec un accord
+## 4. To set aside, or to take only with an agreement
 
-| Source | Pourquoi |
+| Source | Why |
 | --- | --- |
-| **Jondi** | Base d'un concurrent direct. Voir `NOTES.md` |
-| **Eventbrite** | La recherche publique par lieu n'est plus offerte par l'API ; les conditions interdisent l'extraction |
-| **Meetup** | API réservée aux abonnés payants |
-| **Infoconcert** | Refuse les robots (403 vérifié) |
-| **Le Bien Public « Pour sortir »** | Base d'un groupe de presse, usage commercial exclu sans accord |
-| **Facebook Events** | Aucune API de lecture |
-| **vide-greniers.org** | Base commerciale ; les vide-greniers sont en partie dans DATAtourisme et chez les mairies |
-| **Bibliothèques de Dijon** | `robots.txt` interdit tous les robots sauf Google |
+| **Jondi** | A direct competitor's database. See `NOTES.md` |
+| **Eventbrite** | Public search by place is no longer offered by the API; the terms forbid extraction |
+| **Meetup** | API reserved for paying subscribers |
+| **Infoconcert** | Refuses robots (403 checked) |
+| **Le Bien Public "Pour sortir"** | A press group's database, commercial use excluded without agreement |
+| **Facebook Events** | No read API |
+| **vide-greniers.org** | Commercial database; car-boot sales are partly in DATAtourisme and at the town halls |
+| **Dijon libraries** | `robots.txt` forbids every robot except Google |
 
-## 5. Introuvables depuis cette machine
+## 5. Unreachable from this machine
 
-Adresses à retrouver à la main : Péniche Cancale (certificat invalide), Darcy Comédie, les cinémas
-(Eldorado, Darcy, Olympia, Cap Vert), la fédération des MJC, Demosphere Dijon (certificat expiré).
+Addresses to find by hand: Péniche Cancale (invalid certificate), Darcy Comédie, the cinemas (Eldorado,
+Darcy, Olympia, Cap Vert), the MJC federation, Demosphere Dijon (expired certificate).
 
-## 6. Ce que chaque piste comble
+## 6. What each lead fills
 
-Les catégories où Jondi est aujourd'hui seul, et ce qui peut le relayer :
+The categories where Jondi stands alone today, and what can take over:
 
-| Manque | Relais possibles |
+| Gap | Possible relays |
 | --- | --- |
-| Festivals, fêtes de village | DATAtourisme, mairies |
-| Marchés, vide-greniers | DATAtourisme, mairies |
-| Sport | Calendriers des clubs, DATAtourisme |
-| Solidarité, associations | HelloAsso |
-| Soirées, bars, jeux | Lieux en direct (Un Singe en Hiver, Bistrot de la Scène), veille Instagram |
-| Jeune public | La Minoterie, mairies |
-| Cinéma | Agenda des cinémas d'art et essai sur OpenAgenda ; sites des salles à retrouver |
+| Festivals, village fêtes | DATAtourisme, town halls |
+| Markets, car-boot sales | DATAtourisme, town halls |
+| Sport | Club calendars, DATAtourisme |
+| Solidarity, non-profits | HelloAsso |
+| Nights out, bars, games | Venues directly (Un Singe en Hiver, Bistrot de la Scène), Instagram monitoring |
+| Young audiences | La Minoterie, town halls |
+| Cinema | Art-house cinemas' agenda on OpenAgenda; cinema sites to find |
 
-## 7. Ordre conseillé
+## 7. Recommended order
 
-1. **DATAtourisme** : le plus gros gain pour le moins de risque, et il remplace une source scrapée.
-2. **Les quatre mairies à API, le Bistrot de la Scène et le CROUS** : l'adaptateur existe presque déjà.
-3. **Talant, Chenôve, Quetigny** en HTML : Talant à lui seul récupère le premier lieu de la liste Jondi.
-4. **Clé OpenAgenda** : gratuit, améliore une source déjà en place.
-5. **HelloAsso** : vérifier d'abord les conditions d'accès à l'annuaire.
-6. **Veille Instagram assistée** : pour ce qui n'existe nulle part ailleurs.
+1. **DATAtourisme**: the biggest gain for the least risk, and it replaces a scraped source.
+2. **The four town halls with an API, Bistrot de la Scène and the CROUS**: the adapter almost exists already.
+3. **Talant, Chenôve, Quetigny** as HTML: Talant alone recovers the first venue of the Jondi list.
+4. **OpenAgenda key**: free, improves a source already in place.
+5. **HelloAsso**: check the directory access conditions first.
+6. **Assisted Instagram monitoring**: for what exists nowhere else.
 
-Les étapes 1 à 3 ne demandent ni clé ni autorisation. Ce qu'elles récupèrent des 126 événements
-exclusifs à Jondi n'est pas chiffrable avant de les avoir branchées : c'est la première mesure à refaire.
+Steps 1 to 3 need neither a key nor a permission. How many of the 126 events only Jondi has they recover
+cannot be measured before plugging them in: that is the first measurement to redo.

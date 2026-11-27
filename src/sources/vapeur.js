@@ -1,10 +1,10 @@
-// La Vapeur (musiques actuelles) : site Nuxt, la programmation est sérialisée dans le bloc __NUXT_DATA__.
+// La Vapeur (contemporary music): a Nuxt site, the programme is serialised in the __NUXT_DATA__ block.
 const { get } = require("../lib/http");
 const { clean } = require("../lib/text");
 
 const URL = "https://www.lavapeur.com/programme";
 
-// Le payload Nuxt est un tableau à plat où chaque valeur d'objet est l'index d'une autre case.
+// The Nuxt payload is a flat array where each object value is the index of another cell.
 function hydrate(flat) {
   const memo = new Map();
   const resolve = (i) => {
@@ -13,7 +13,7 @@ function hydrate(flat) {
     const v = flat[i];
     if (v === null || typeof v !== "object") return v;
     if (Array.isArray(v)) {
-      // enveloppes de réactivité : ["Reactive", n], ["Ref", n]…
+      // reactivity wrappers: ["Reactive", n], ["Ref", n]…
       if (typeof v[0] === "string" && v.length === 2 && typeof v[1] === "number") return resolve(v[1]);
       const arr = [];
       memo.set(i, arr);

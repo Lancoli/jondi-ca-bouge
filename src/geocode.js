@@ -1,4 +1,4 @@
-// Donne des coordonnées aux événements qui n'en ont pas : gazetier de lieux (Jondi), puis Base Adresse Nationale.
+// Gives coordinates to events without any: venue gazetteer (Jondi), then Base Adresse Nationale.
 const { get, pmap } = require("./lib/http");
 const { DIJON, distance } = require("./lib/geo");
 const { strip } = require("./categories");
@@ -13,14 +13,14 @@ async function ban(q, { municipality = false } = {}) {
   const f = data.features?.[0];
   if (!f || (f.properties.score ?? 0) < 0.45) return null;
   const [lng, lat] = f.geometry.coordinates;
-  // un résultat à plus de 60 km de Dijon est un homonyme, pas notre lieu
+  // a result more than 60 km from Dijon is a namesake, not our place
   if (distance(DIJON, { lat, lng }) > 60000) return null;
   return { lat, lng, label: f.properties.label };
 }
 
-// Lieux connus seulement par leur nom (« Espace Mendès-France ») : OpenStreetMap, borné à l'agglomération.
-// Nominatim demande un agent identifiable et une requête par seconde au plus : on s'y tient, avec un
-// petit quota par passage ; le cache fait le reste au fil des actualisations.
+// Places known only by name ("Espace Mendès-France"): OpenStreetMap, bounded to the metro area.
+// Nominatim asks for an identifiable agent and at most one request per second: we stick to it, with a
+// small quota per run; the cache does the rest over the refreshes.
 const OSM = "https://nominatim.openstreetmap.org/search";
 const OSM_BUDGET = 20;
 const VAGUE = /^(hors les murs|musees de dijon|dijon|centre ville|centre ville de dijon|online|parking|campus de dijon)$/;
@@ -32,8 +32,8 @@ async function osm(name) {
   return hit && sameName(name, hit.name) ? { lat: +hit.lat, lng: +hit.lon, label: hit.display_name } : null;
 }
 
-// Une position fausse est pire qu'une position absente (elle donnerait un trajet faux avec aplomb) :
-// on n'accepte un résultat que si son nom recoupe vraiment celui du lieu cherché.
+// A wrong position is worse than a missing one (it would confidently give a wrong trip):
+// a result is accepted only if its name really matches the place searched for.
 const HOLLOW = new Set(["les", "des", "une", "aux", "sur", "dijon"]);
 const WRONG_KIND = new Set(["residence", "rue", "avenue", "boulevard", "impasse", "allee", "chemin"]);
 function sameName(wanted, found) {
@@ -42,13 +42,13 @@ function sameName(wanted, found) {
   const b = words(found);
   if (!a.length || !b.length || !a.some((w) => w.length >= 5)) return false;
   const extra = (big, small) => (small.every((w) => big.includes(w)) ? big.filter((w) => !small.includes(w)) : null);
-  const more = extra(b, a); // le résultat précise le lieu : « Lycée polyvalent Hippolyte Fontaine »
+  const more = extra(b, a); // the result narrows the place: "Lycée polyvalent Hippolyte Fontaine"
   if (more) return more.length <= 2 && !more.some((w) => WRONG_KIND.has(w));
-  const less = extra(a, b); // le lieu cherché précise le résultat : « Université … Bâtiment Sciences Gabriel »
+  const less = extra(a, b); // the searched place narrows the result: "Université … Bâtiment Sciences Gabriel"
   return !!less && b.length >= 2;
 }
 
-// Recherche d'adresse pour l'interface (autocomplétion du domicile).
+// Address search for the interface (home autocomplete).
 async function suggest(q) {
   const url = `${BAN}?q=${encodeURIComponent(q.slice(0, 180))}&limit=6&autocomplete=1&lat=${DIJON.lat}&lon=${DIJON.lng}`;
   const data = await get(url, { as: "json", timeout: 10000 });
@@ -66,7 +66,7 @@ async function geocodeEvents(events, { gazetteer = [], cache }) {
     if (!key) return null;
     if (byName.has(key)) return byName.get(key);
     if (key.length < 8) return null;
-    // "Musée des Beaux-Arts de Dijon" doit retrouver "Musée des Beaux-Arts"
+    // "Musée des Beaux-Arts de Dijon" must find "Musée des Beaux-Arts"
     for (const [k, v] of byName) if (k.length >= 8 && (key.startsWith(k) || k.startsWith(key))) return v;
     return null;
   };
@@ -81,7 +81,7 @@ async function geocodeEvents(events, { gazetteer = [], cache }) {
       e.lng = known.lng;
       continue;
     }
-    // certaines sources mettent l'adresse à la place du nom du lieu
+    // some sources put the address in place of the venue name
     const street = e.address && STREET.test(e.address) ? e.address : e.venue && STREET.test(e.venue) && /\d/.test(e.venue) ? `${e.venue}, ${e.city || "Dijon"}` : null;
     const hasStreet = !!street;
     const q = street || (!e.venue && e.city ? e.city : null);

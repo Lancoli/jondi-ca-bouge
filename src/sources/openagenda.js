@@ -1,5 +1,5 @@
-// OpenAgenda, via le jeu de données public « evenements-publics-openagenda » d'OpenDataSoft (sans clé d'API).
-// Couvre les agendas de nombreuses structures : associations, bibliothèques, festivals nationaux déclinés à Dijon…
+// OpenAgenda, through OpenDataSoft's public "evenements-publics-openagenda" dataset (no API key).
+// Covers the agendas of many organisations: non-profits, libraries, national festivals held in Dijon…
 const { get } = require("../lib/http");
 const { toLocal, today } = require("../lib/dates");
 const { clean } = require("../lib/text");
@@ -28,7 +28,7 @@ module.exports = {
             .map((t) => ({ start: toLocal(t.begin), end: toLocal(t.end) }))
             .filter((o) => o.start);
         } catch {
-          /* timings illisibles : on garde la plage globale */
+          /* unreadable timings: keep the overall range */
         }
         const conditions = clean(r.conditions_fr);
         out.push({

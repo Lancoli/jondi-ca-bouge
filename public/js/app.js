@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  // ---------- Outils ----------
+  // ---------- Helpers ----------
   const $ = (sel, root = document) => root.querySelector(sel);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const fold = (s) => String(s || "").normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
@@ -27,7 +27,7 @@
     bolt: icon('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>'),
     all: icon('<rect x="4" y="4" width="6.500" height="6.500" rx="1.500"/><rect x="13.500" y="4" width="6.500" height="6.500" rx="1.500"/><rect x="4" y="13.500" width="6.500" height="6.500" rx="1.500"/><rect x="13.500" y="13.500" width="6.500" height="6.500" rx="1.500"/>'),
   };
-  // Pictogramme et teinte de chaque catégorie (la teinte donne le liseré des cartes et la couleur des étiquettes).
+  // Pictogram and hue of each category (the hue gives the card edging and the tag colour).
   const CAT_LOOK = {
     musique: ["rose", '<path d="M9 18V5l11-2v13"/><circle cx="6.500" cy="18" r="2.500"/><circle cx="17.500" cy="16" r="2.500"/>'],
     spectacle: ["orange", '<path d="M4 5h16v6a8 8 0 0 1-16 0z"/><path d="M8.500 9.500h.01M15.500 9.500h.01M9 14c1.800 1.400 4.200 1.400 6 0"/>'],
@@ -58,7 +58,7 @@
   const look = (id) => CAT_LOOK[id] || CAT_LOOK.autre;
   const catIcon = (id) => icon(look(id)[1]);
 
-  // Les dates des événements sont des heures murales de Paris : on compare avec « maintenant à Paris ».
+  // Event dates are Paris wall-clock times: compare with "now in Paris".
   const parisFmt = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false });
   const nowParis = () => parisFmt.format(new Date()).replace(" ", "T").replace("T24:", "T00:");
   const dayOf = (s) => s.slice(0, 10);
@@ -94,7 +94,7 @@
     return `il y a ${Math.round(m / 60)} h`;
   };
 
-  // ---------- Préférences (stockées sur l'appareil) ----------
+  // ---------- Preferences (stored on the device) ----------
   const STORE = "jcb:v1";
   const DEFAULTS = { home: null, places: [], placeId: null, car: null, useGps: false, mode: "explore", compact: true, wish: [], seen: [], tastes: { cats: {}, like: [], block: [], moments: [], maxKm: 3, sourcesOff: [] } };
   const prefs = (() => {
@@ -107,7 +107,7 @@
   })();
   prefs.wish = Array.isArray(prefs.wish) ? [...prefs.wish] : [];
   prefs.seen = Array.isArray(prefs.seen) ? [...prefs.seen] : [];
-  // Lieux enregistrés (Maison, Travail…) : l'ancienne adresse unique devient le premier d'entre eux.
+  // Saved places (Home, Work…): the old single address becomes the first of them.
   prefs.places = Array.isArray(prefs.places) ? [...prefs.places] : [];
   if (prefs.home && !prefs.places.length) {
     prefs.places.push({ id: "maison", name: "Maison", label: prefs.home.label, lat: prefs.home.lat, lng: prefs.home.lng });
@@ -120,7 +120,7 @@
     try {
       localStorage.setItem(STORE, JSON.stringify(prefs));
     } catch {
-      /* navigation privée : les réglages ne survivent pas à la session */
+      /* private browsing: settings do not outlive the session */
     }
   };
 
@@ -138,7 +138,7 @@
     { id: "soir", label: "Soirée", from: 18, to: 23 },
     { id: "nuit", label: "Nuit", from: 23, to: 30 },
   ];
-  // Les trois axes du classement : de quoi ça parle, comment on y prend part, pour qui.
+  // The three classification axes: what it is about, how one takes part, for whom.
   const KINDS = [
     { id: "theme", label: "Thèmes", hint: "De quoi ça parle." },
     { id: "format", label: "Formats", hint: "Comment on y prend part." },
@@ -159,23 +159,23 @@
   ];
   const RADII = [1, 2, 3, 5, 10, 20];
 
-  // Point de départ : adresse ponctuelle > GPS (si choisi) > adresse enregistrée > GPS.
+  // Starting point: one-off address > GPS (if chosen) > saved address > GPS.
   const origin = () => state.temp || (prefs.useGps && state.gps) || placeOrigin(activePlace()) || state.gps || null;
   const cat = (id) => state.categories.find((c) => c.id === id) || { id, label: id, axe: "jaune" };
   const axeOf = (e) => cat(e.categories[0]).axe;
   const hueOf = (e) => look(e.categories[0])[0];
   const hasTastes = () => Object.values(prefs.tastes.cats).some((v) => v === 1) || prefs.tastes.like.length > 0;
 
-  // ---------- Ma liste ----------
-  // On garde une copie de chaque événement mis de côté : il reste retrouvable même si son identifiant
-  // change à une actualisation, ou s'il disparaît des sources une fois passé.
+  // ---------- My list ----------
+  // A copy of each saved event is kept: it can still be found even if its id
+  // changes on a refresh, or if it disappears from the sources once over.
   const isWished = (e) => prefs.wish.some((w) => w.id === e.id);
   function findLive(w) {
     const byId = state.events.find((x) => x.id === w.id);
     if (byId) return byId;
     const same = state.events.filter((x) => fold(x.title) === w.key);
     if (same.length <= 1) return same[0] || null;
-    // plusieurs événements portent ce titre : on ne raccroche que si le lieu concorde
+    // several events have this title: relink only if the place matches
     return same.find((x) => fold(x.venue || x.city || "") === fold(w.venue)) || null;
   }
   const snapshot = (e) => ({ id: e.id, key: fold(e.title), title: e.title, start: e.start, venue: e.venue || e.city || "", url: e.url });
@@ -186,7 +186,7 @@
     else if (e) prefs.wish.push({ ...snapshot(e), addedAt: Date.now() });
     save();
   }
-  // Après chaque chargement : on raccroche les entrées aux événements du jour et on rafraîchit leur copie.
+  // After each load: relink the entries to today's events and refresh their copy.
   function relinkWish() {
     let changed = false;
     for (const w of prefs.wish) {
@@ -205,8 +205,8 @@
     return `<button class="${cls}" type="button" data-wish="${e.id}" aria-pressed="${on}" aria-label="${label} : ${esc(e.title)}" title="${label}">${text}</button>`;
   };
 
-  // ---------- Carnet de présence ----------
-  // Comme une capture : on ne valide un événement qu'en y étant (GPS à moins de 300 m), autour de son horaire.
+  // ---------- Attendance logbook ----------
+  // Like a capture: an event is only checked in while there (GPS under 300 m), around its time.
   const CHECKIN_KM = 0.300;
   const isSeen = (e) => prefs.seen.some((w) => w.id === e.id || w.key === fold(e.title));
   function checkinBlock(e, slot) {
@@ -230,7 +230,7 @@
     return `<div class="day panel"><div class="day__head">${ICONS.calendar}<h2>Carnet de sorties</h2><p class="muted">${prefs.seen.length} événement${prefs.seen.length > 1 ? "s" : ""} où tu as validé ta présence sur place.</p></div><div class="gone">${rows}</div></div>`;
   }
 
-  // Bascule entre la carte (Explorer) et l'agenda complet (Liste).
+  // Switches between the map (Explore) and the full agenda (List).
   function setMode(mode, view) {
     prefs.mode = mode;
     save();
@@ -241,14 +241,14 @@
     render();
   }
 
-  // ---------- Filtrage et pertinence ----------
+  // ---------- Filtering and relevance ----------
   function haystack(e) {
     return (e._text ||= fold([e.title, e.venue, e.city, e.address, e.description, e.tags.join(" "), e.categories.map((c) => cat(c).label).join(" ")].join(" ")));
   }
 
-  // Recherche par mots, pas par sous-chaîne : « rap » ne doit pas trouver « photographie » ni « rapport ».
-  // Un terme court (3 lettres ou moins) doit être un mot entier ; un terme plus long peut en être le début
-  // (« expo » trouve « exposition »). Quelques genres ont des équivalents qu'on cherche en même temps.
+  // Search by words, not substrings: "rap" must not match "photographie" or "rapport".
+  // A short term (3 letters or fewer) must be a whole word; a longer term can be its start
+  // ("expo" finds "exposition"). Some genres have equivalents searched at the same time.
   const ALSO = {
     rap: ["hip.?hop", "rappeu\\w*", "trap", "drill"],
     "hip-hop": ["rap", "hip.?hop", "rappeu\\w*"],
@@ -279,7 +279,7 @@
     s += Math.min(6, e.categories.filter((c) => t.cats[c] === 1).length * 3);
     const text = haystack(e);
     for (const w of t.like) if (says(text, w)) s += 4;
-    // en recherche, un terme trouvé dans le titre pèse plus qu'une mention dans la description
+    // when searching, a term found in the title weighs more than a mention in the description
     for (const w of searchTerms()) if (says(fold(e.title), w)) s += 2;
     if (start && start.length > 10 && t.moments.length) {
       const h = +start.slice(11, 13);
@@ -302,7 +302,7 @@
     if (state.cats.size && !e.categories.some((c) => state.cats.has(c))) return false;
     if (state.type && !e.categories.includes(state.type)) return false;
     if (state.source && !e.sources.some((s) => s.id === state.source)) return false;
-    // une catégorie masquée n'écarte l'événement que s'il n'en a pas d'autre qu'on aime
+    // a hidden category only drops the event if it has no other liked category
     if (e.categories.every((c) => t.cats[c] === -1)) return false;
     if (e.categories.some((c) => t.cats[c] === -1) && !e.categories.some((c) => t.cats[c] === 1)) return false;
     const text = haystack(e);
@@ -325,7 +325,7 @@
     if (range === "7j") return [t, addDays(t, 6)];
     if (range === "30j") return [t, addDays(t, 29)];
     if (range === "we") {
-      const dow = asDate(t).getUTCDay(); // 0 = dimanche
+      const dow = asDate(t).getUTCDay(); // 0 = Sunday
       if (dow === 0) return [t, t];
       if (dow === 6) return [t, addDays(t, 1)];
       const friday = addDays(t, 5 - dow);
@@ -334,8 +334,8 @@
     return [t, "9999-12-31"];
   }
 
-  // Un événement à plusieurs séances apparaît à chaque jour de la période où il a lieu.
-  // Une séance est révolue une fois finie, ou trois heures après son début quand la fin est inconnue.
+  // An event with several sessions appears on each day of the period it runs.
+  // A session is over once finished, or three hours after its start when the end is unknown.
   function isPast(o, now = nowParis()) {
     if (o.start.length <= 10) return false;
     const ends = o.end && o.end > o.start;
@@ -352,11 +352,11 @@
       for (const o of [{ start: e.start, end: e.end }, ...e.occurrences]) {
         const day = dayOf(o.start);
         if (day < from || day > to) continue;
-        // le « week-end » ne commence que le vendredi soir
+        // the "weekend" only starts on Friday evening
         if (range === "we" && asDate(day).getUTCDay() === 5 && o.start.length > 10 && +o.start.slice(11, 13) < 18) continue;
         const past = isPast(o, now);
         const kept = byDay.get(day);
-        // par jour : la première séance encore à venir ; à défaut, la dernière déjà passée
+        // per day: the first session still to come; failing that, the last one already past
         if (!kept || kept.past) byDay.set(day, { e, start: o.start, end: o.end, day, past, score: score(e, o.start) });
       }
       const list = [...byDay.values()];
@@ -367,11 +367,11 @@
 
   const byTime = (a, b) => {
     const at = a.start.length > 10, bt = b.start.length > 10;
-    if (at !== bt) return at ? -1 : 1; // sans heure : en fin de journée
+    if (at !== bt) return at ? -1 : 1; // without a time: at the end of the day
     return a.start.localeCompare(b.start) || b.score - a.score;
   };
 
-  // ---------- Rendu ----------
+  // ---------- Rendering ----------
   function whenLabel(slot) {
     const { e, start, end } = slot;
     if (e.period && start.length <= 10) return `Du ${fmtTiny.format(asDate(e.period.start))} au ${fmtTiny.format(asDate(e.period.end))}`;
@@ -414,7 +414,7 @@
     for (const l of (e.stop?.lines || []).slice(0, 2)) tags.push(`<span class="tag tag--line" style="--line:${esc(l.color)}" title="Arrêt ${esc(e.stop.name)} à ${e.stop.distance} m">${esc(l.name)}</span>`);
     const more = e.occurrences.length ? `<span class="tag">+${e.occurrences.length} date${e.occurrences.length > 1 ? "s" : ""}</span>` : "";
     const src = e.sources.length > 1 ? `<span class="tag" title="${esc(e.sources.map((s) => s.name).join(", "))}">${e.sources.length} sources</span>` : `<span class="tag">${esc(e.sources[0].name)}</span>`;
-    // le cœur est un bouton voisin de la carte : pas de bouton dans un bouton
+    // the heart is a button next to the card: no button inside a button
     return `<div class="cardwrap${slot.past ? " is-past" : ""}${isWished(e) ? " is-wished" : ""}"><button class="card" type="button" data-id="${e.id}" data-start="${slot.start}" data-c="${hueOf(e)}">
       ${media(e)}
       <span class="card__body">
@@ -426,11 +426,11 @@
     </button>${wishButton(e)}</div>`;
   }
 
-  // Le tarif n'est étiqueté que si la source le dit : ni « gratuit » ni « payant » par défaut.
+  // The price is labelled only if the source says so: neither "free" nor "paid" by default.
   const priceTag = (e) => (e.free ? '<span class="tag tag--free">Gratuit</span>' : e.priceLibre ? '<span class="tag tag--free">Prix libre</span>' : e.price ? `<span class="tag tag--paid" title="${esc(e.price)}">Payant</span>` : "");
 
-  // Temps de trajet estimé depuis le point de départ : à pied jusqu'à 2 km, à vélo au-delà.
-  // La distance est à vol d'oiseau, majorée de 30 % pour le détour des rues.
+  // Travel time estimated from the starting point: on foot up to 2 km, by bike beyond.
+  // The distance is as the crow flies, plus 30 % for the street detour.
   function travel(d) {
     const byFoot = d <= 2;
     const mins = Math.max(1, Math.round(((d * 1.300) / (byFoot ? 4.500 : 15)) * 60));
@@ -472,9 +472,9 @@
     const mine = hasTastes();
     let picks = pool.filter((s) => s.day === t).sort(byTime);
     if (picks.length < 6) picks = pool.filter((s) => s.day <= addDays(t, 1)).sort(byTime);
-    // avec des goûts renseignés, ce qui te correspond passe devant à heure proche
+    // with tastes set, what suits you comes first at a similar time
     if (mine) picks = picks.slice(0, 40).sort((a, b) => (b.score >= 3) - (a.score >= 3) || byTime(a, b));
-    // ce que tu as mis dans ta liste et qui commence aujourd'hui ou demain passe en tête
+    // what you saved in your list and starts today or tomorrow goes to the top
     const wished = pool.filter((s) => s.day <= addDays(t, 1) && isWished(s.e)).sort(byTime);
     picks = [...wished, ...picks.filter((s) => !wished.includes(s))];
     picks = picks.slice(0, 14);
@@ -501,7 +501,7 @@
     const shown = (kinds) => state.categories
       .filter((c) => kinds.includes(c.kind) && counts[c.id] && t.cats[c.id] !== -1)
       .sort((x, y) => (t.cats[y.id] === 1) - (t.cats[x.id] === 1) || counts[y.id] - counts[x.id]);
-    // la rangée porte les thèmes et les publics ; les formats (atelier, visite…) sont dans « Type »
+    // the row holds the themes and publics; the formats (workshop, tour…) are under "Type"
     $("#catChips").innerHTML = `<button class="chip" type="button" data-cat="" aria-pressed="${!state.cats.size}">${ICONS.all}Tout</button>` + shown(["theme", "public"])
       .map((c) => `<button class="chip${t.cats[c.id] === 1 ? " is-loved" : ""}" type="button" data-cat="${c.id}" aria-pressed="${state.cats.has(c.id)}" title="${counts[c.id]} événements">${catIcon(c.id)}${esc(c.label)}</button>`).join("");
 
@@ -554,7 +554,7 @@
         : emptyState();
       return;
     }
-    // une recherche porte sur toutes les dates : on cherche un artiste, pas « un artiste cette semaine »
+    // a search covers every date: people look for an artist, not "an artist this week"
     const searching = searchTerms().length > 0;
     const all = slots(searching ? "tout" : state.range);
     if (!all.length) {
@@ -593,7 +593,7 @@
     root.innerHTML = html;
   }
 
-  // Ma liste ignore les filtres et les goûts : ce que tu as mis de côté s'affiche toujours.
+  // My list ignores filters and tastes: what you saved is always shown.
   function renderWish(root) {
     if (!prefs.wish.length) {
       root.innerHTML = `<div class="empty"><h3>Ta liste est vide</h3><p class="muted">Touche le ♥ d'un événement pour le mettre de côté. Il restera ici, enregistré sur cet appareil.</p></div>`;
@@ -657,7 +657,7 @@
       return;
     }
     const live = state.sources.filter((s) => s.fetched).length;
-    // hors connexion, le service worker rend le dernier agenda reçu : on le dit, et on n'offre pas d'actualiser
+    // offline, the service worker returns the last agenda received: say so, and do not offer to refresh
     if (state.offline) {
       el.innerHTML = `<span>Hors connexion · ${state.events.length} événements · agenda mis à jour ${esc(ago(state.generatedAt))}</span>
         <button type="button" data-action="reload">Réessayer</button>`;
@@ -675,26 +675,26 @@
     window.JCBExplore?.render();
   }
 
-  // ---------- Fiche événement et trajet ----------
+  // ---------- Event sheet and trip ----------
   function gmaps(e, mode) {
     const numbered = e.address && /^\s*\d/.test(e.address);
     const dest = numbered || e.lat == null ? [e.address ? null : e.venue, e.address || e.city].filter(Boolean).join(", ") : `${e.lat},${e.lng}`;
     const p = new URLSearchParams({ api: "1", destination: dest, travelmode: mode });
     const o = origin();
-    if (o) p.set("origin", `${o.lat},${o.lng}`); // sans origine, Google part de la position de l'appareil
+    if (o) p.set("origin", `${o.lat},${o.lng}`); // without an origin, Google starts from the device position
     return `https://www.google.com/maps/dir/?${p}`;
   }
 
-  // ---------- Agenda ----------
-  // Heure murale de Paris -> instant UTC au format iCalendar ("20261010T183000Z").
+  // ---------- Calendar ----------
+  // Paris wall-clock time -> UTC instant in iCalendar format ("20261010T183000Z").
   function utcStamp(wall) {
     const guess = Date.parse(`${wall.slice(0, 16)}:00Z`);
     const shown = Date.parse(`${parisFmt.format(new Date(guess)).replace(" ", "T").replace("T24:", "T00:")}:00Z`);
     return new Date(guess - (shown - guess)).toISOString().replace(/[-:]|\.\d{3}/g, "");
   }
 
-  // Créneau à inscrire : sans heure, la journée entière (ou toute la période) ; sans heure de fin,
-  // une heure par défaut, signalée dans la note. Rien pour une offre permanente sans horaire.
+  // Slot to write down: without a time, the whole day (or the whole period); without an end time,
+  // one hour by default, flagged in the note. Nothing for a permanent offer without times.
   function calendarEntry(slot) {
     const { e, start, end } = slot;
     const timed = start.length > 10;
@@ -707,7 +707,7 @@
       to = utcStamp(guessed ? new Date(Date.parse(`${start.slice(0, 16)}:00Z`) + 3600000).toISOString() : end);
     } else {
       from = compact(e.period ? e.period.start : slot.day);
-      to = compact(addDays(e.period ? e.period.end : slot.day, 1)); // fin exclue
+      to = compact(addDays(e.period ? e.period.end : slot.day, 1)); // end excluded
     }
     const priceText = e.free ? "Gratuit" : e.priceLibre ? "Prix libre" : e.price || "";
     const text = (e.description || "").replace(/\s+/g, " ").trim();
@@ -727,7 +727,7 @@
     return `https://calendar.google.com/calendar/render?${p}`;
   }
 
-  // Fichier .ics : lu par Apple Calendrier, Outlook, Proton, Thunderbird…
+  // .ics file: read by Apple Calendar, Outlook, Proton, Thunderbird…
   function downloadIcs(c) {
     const txt = (s) => String(s).replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\r?\n/g, "\\n");
     const date = (k, v) => (c.timed ? `${k}:${v}` : `${k};VALUE=DATE:${v}`);
@@ -742,7 +742,7 @@
       `URL:${c.e.url}`,
       "END:VEVENT", "END:VCALENDAR",
     ].filter(Boolean);
-    // lignes repliées à 60 caractères (la norme en tolère 75 octets)
+    // lines folded at 60 characters (the standard allows 75 bytes)
     const folded = lines.map((l) => Array.from(l).reduce((acc, ch, i) => acc + (i && i % 60 === 0 ? "\r\n " : "") + ch, ""));
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([folded.join("\r\n") + "\r\n"], { type: "text/calendar;charset=utf-8" }));
@@ -866,7 +866,7 @@
       box.innerHTML = `${from}${$("#compare")?.outerHTML || ""}${modes}<p class="trip__note">Le réseau Divia n'a pas répondu (${esc(err.message)}). Les liens Google Maps restent utilisables.</p>`;
       return;
     }
-    if (state.open?.e !== e) return; // une autre fiche a été ouverte entre-temps
+    if (state.open?.e !== e) return; // another sheet was opened in the meantime
 
     const options = r.options
       .map((op) => {
@@ -895,8 +895,8 @@
     box.innerHTML = `${from}${$("#compare")?.outerHTML || ""}${modes}${body}${walkNote}<p class="trip__note">${foot} Départ : ${esc(o.label)}.</p>`;
   }
 
-  // À pied, à vélo, en voiture sur le vrai réseau de rues (OpenStreetMap). Un mode sans réponse est
-  // simplement absent : pas de durée à vol d'oiseau présentée comme un calcul.
+  // On foot, by bike, by car on the real street network (OpenStreetMap). A mode without an answer is
+  // simply absent: no as-the-crow-flies duration presented as a calculation.
   async function loadCompare(o, e) {
     const q = new URLSearchParams({ from: `${o.lat},${o.lng}`, to: `${e.lat},${e.lng}`, modes: "walk,bike,car" });
     // prefs.car keeps its stored keys (conso, prix): visitors already saved them
@@ -923,7 +923,7 @@
       ? `<div class="stops">${stops.map((s) => `<div>${esc(s.name)} <span class="muted">· ${s.distance} m</span> ${s.lines.map((l) => `<span class="line" style="--line:${esc(l.color)}">${esc(l.name)}</span>`).join("")}</div>`).join("")}</div>`
       : `<p class="trip__note">Aucun arrêt Divia à moins de 600 m.</p>`;
 
-  // ---------- Panneau « Mes goûts » ----------
+  // ---------- "My tastes" panel ----------
   function renderTastes() {
     const t = prefs.tastes;
     const sortKey = (c) => {
@@ -957,7 +957,7 @@
       <div class="linkrow" style="margin-top:26px"><button class="btn btn--small" type="button" data-action="resetTastes">Tout remettre à zéro</button></div>`;
   }
 
-  // ---------- Panneau « D'où pars-tu ? » ----------
+  // ---------- "Where are you leaving from?" panel ----------
   function renderOrigin(message = "") {
     const active = !(prefs.useGps && state.gps) && activePlace();
     const rows = prefs.places
@@ -1022,7 +1022,7 @@
           const r = await (await fetch(`/api/reverse?at=${p.lat},${p.lng}`)).json();
           if (r.label) p.label = `ma position (${r.label})`;
         } catch {
-          /* le libellé reste « ma position » */
+          /* the label stays "my position" */
         }
         state.gps = p;
         state.temp = null;
@@ -1056,7 +1056,7 @@
     }
   }
 
-  // ---------- Données ----------
+  // ---------- Data ----------
   let pollTimer;
   async function load() {
     const res = await fetch("/api/events");
@@ -1068,7 +1068,7 @@
     if (data.refreshing) pollTimer = setTimeout(load, 4000);
   }
 
-  // ---------- Événements d'interface ----------
+  // ---------- Interface events ----------
   document.addEventListener("click", (ev) => {
     const el = ev.target.closest("button, a");
     if (!el) return;
@@ -1091,7 +1091,7 @@
         label.textContent = msg;
         setTimeout(() => (label.textContent = "Partager"), 1800);
       };
-      // partage natif sur mobile ; ailleurs, le lien de la source est copié
+      // native share on mobile; elsewhere, the source link is copied
       if (navigator.share) navigator.share({ title: e.title, text: `${e.title} — ${e.venue || e.city || "Dijon"}`, url: e.url }).catch(() => {});
       else navigator.clipboard?.writeText(e.url).then(() => done("Lien copié"), () => done("Copie impossible"));
       return;
@@ -1099,7 +1099,7 @@
     if (d.wish) {
       toggleWish(d.wish);
       render();
-      // la fiche ouverte reflète tout de suite le changement
+      // the open sheet reflects the change right away
       const inSheet = $("#eventSheet .wishbtn");
       if (inSheet && state.open) inSheet.outerHTML = wishButton(state.open.e, "act wishbtn");
       return;
@@ -1222,7 +1222,7 @@
     $(`form[data-words="${form.dataset.words}"] input`).focus();
   });
 
-  // Les listes déroulantes du panneau de filtres et le tri.
+  // The filter panel drop-downs and the sort.
   document.addEventListener("change", (ev) => {
     const f = ev.target.dataset?.field;
     if (!f) return;
@@ -1264,7 +1264,7 @@
     }
   });
 
-  // Entrée dans le champ d'adresse : on valide la première proposition.
+  // Enter in the address field: the first suggestion is accepted.
   document.addEventListener("keydown", async (ev) => {
     if (ev.key !== "Enter" || ev.target.id !== "addr") return;
     ev.preventDefault();
@@ -1273,9 +1273,9 @@
     if (found[0]) setAddress(found[0]);
   });
 
-  // Une image de source qui ne charge pas laisse place à l'aplat de couleur.
+  // A source image that fails to load gives way to the flat colour.
   document.addEventListener("error", (ev) => ev.target.tagName === "IMG" && ev.target.remove(), true);
-  // Clic sur le fond assombri : on ferme le panneau.
+  // Click on the dimmed backdrop: the panel closes.
   for (const dlg of document.querySelectorAll("dialog")) {
     dlg.addEventListener("click", (ev) => ev.target === dlg && dlg.close());
     dlg.addEventListener("close", () => {
@@ -1284,8 +1284,8 @@
     });
   }
 
-  // ---------- Appli installable ----------
-  // Le navigateur propose l'installation quand il la juge possible ; le bouton n'apparaît qu'à ce moment-là.
+  // ---------- Installable app ----------
+  // The browser offers installation when it deems it possible; the button only appears then.
   let installPrompt = null;
   window.addEventListener("beforeinstallprompt", (ev) => {
     ev.preventDefault();

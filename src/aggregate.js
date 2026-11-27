@@ -1,5 +1,5 @@
-// Lance toutes les sources en parallèle, isole les pannes (une source cassée n'empêche pas les autres),
-// puis normalise, géocode, dédoublonne et écrit data/events.json.
+// Runs every source in parallel, isolates failures (a broken source does not stop the others),
+// then normalises, geocodes, deduplicates and writes data/events.json.
 const fs = require("fs");
 const path = require("path");
 const sources = require("./sources");
@@ -11,10 +11,10 @@ const { openCache, DATA_DIR } = require("./lib/cache");
 const { DIJON, distance } = require("./lib/geo");
 
 const EVENTS_FILE = path.join(DATA_DIR, "events.json");
-const MAX_KM = 45; // au-delà, ce n'est plus « à Dijon »
+const MAX_KM = 45; // beyond that, it is no longer "in Dijon"
 
-// Une source peut fixer son propre rythme (`every`, en secondes) : entre deux relevés, on resert le
-// dernier résultat gardé sur disque au lieu de solliciter le site à chaque passage.
+// A source can set its own pace (`every`, in seconds): between two collections, the last result kept
+// on disk is served again instead of hitting the site on every run.
 async function runSource(source, ctx) {
   const started = Date.now();
   const kept = source.every ? ctx.raw.get(`source:${source.id}`) : null;
@@ -24,17 +24,17 @@ async function runSource(source, ctx) {
     if (source.every && raw.length) {
       const kept = { raw, at: new Date().toISOString() };
       ctx.raw.set(`source:${source.id}`, kept, source.every);
-      ctx.raw.set(`last:${source.id}`, kept); // sans échéance : sert de secours si le site ne répond plus
+      ctx.raw.set(`last:${source.id}`, kept); // no expiry: serves as a fallback if the site stops answering
     }
     return { source, raw, ms: Date.now() - started };
   } catch (err) {
-    // en cas de panne, mieux vaut le dernier relevé connu que rien
+    // when something breaks, the last known collection is better than nothing
     const last = source.every ? ctx.raw.get(`last:${source.id}`) : null;
     return last ? { source, raw: last.raw, ms: Date.now() - started, cachedAt: last.at } : { source, raw: [], error: err.message, ms: Date.now() - started };
   }
 }
 
-// Le répertoire des lieux change peu : un relevé par semaine suffit.
+// The venue directory changes little: one collection a week is enough.
 async function venues(ctx) {
   const kept = ctx.raw.get("venues");
   if (kept) return kept;
@@ -90,7 +90,7 @@ async function aggregate({ only } = {}) {
 
   const payload = { generatedAt: new Date().toISOString(), sources: report, events };
   if (!only) {
-    // un passage vide (réseau coupé, sites en panne) ne remplace pas le dernier relevé utile
+    // an empty run (network down, sites broken) does not replace the last useful collection
     if (!events.length && readCached()?.events?.length) {
       throw new Error(`aucun événement relevé (${report.filter((r) => r.error).length} sources en échec) : dernier relevé conservé`);
     }
@@ -110,8 +110,8 @@ function readCached() {
 
 module.exports = { aggregate, readCached };
 
-// Usage : node src/aggregate.js            -> scrape complet
-//         node src/aggregate.js --only bm  -> une seule source, avec un aperçu (rien n'est écrit)
+// Usage: node src/aggregate.js            -> full scrape
+//         node src/aggregate.js --only bm  -> a single source, with a preview (nothing is written)
 if (require.main === module) {
   const i = process.argv.indexOf("--only");
   const only = i > 0 ? process.argv[i + 1].split(",") : null;

@@ -1,4 +1,4 @@
-// Théâtre Dijon Bourgogne (CDN) : saison paginée, dates au format "08.10 → 16.10".
+// Théâtre Dijon Bourgogne (CDN): paginated season, dates as "08.10 → 16.10".
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { pad, seasonYear, currentSeasonStart } = require("../lib/dates");

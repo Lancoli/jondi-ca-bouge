@@ -1,7 +1,7 @@
-// Réseau DiviaMobilités (Keolis Dijon) à partir de l'open data officiel :
-//  - GTFS théorique (arrêts, lignes, horaires) publié sur data.gouv.fr
-//  - GTFS-RT « prochains passages » via le proxy transport.data.gouv.fr
-// On en tire les arrêts proches d'un lieu et un calcul d'itinéraire direct ou avec une correspondance.
+// DiviaMobilités network (Keolis Dijon) from the official open data:
+//  - scheduled GTFS (stops, lines, timetables) published on data.gouv.fr
+//  - GTFS-RT "next departures" through the transport.data.gouv.fr proxy
+// From it: the stops near a place, and a route that is direct or with one transfer.
 const fs = require("fs");
 const path = require("path");
 const AdmZip = require("adm-zip");
@@ -16,9 +16,9 @@ const RT_URL = "https://proxy.transport.data.gouv.fr/resource/divia-dijon-gtfs-r
 const GTFS_FILE = path.join(DATA_DIR, "gtfs-divia.zip");
 const GTFS_MAX_AGE = 7 * 86400 * 1000;
 
-const WALK_RADIUS = 700; // mètres à vol d'oiseau jusqu'à un arrêt
-const WALK_SPEED = 1.25 / 1.3; // m/s, avec 30 % de détour par rapport à la ligne droite
-const TRANSFER = 180; // secondes mini pour changer de véhicule
+const WALK_RADIUS = 700; // metres as the crow flies to a stop
+const WALK_SPEED = 1.25 / 1.3; // m/s, with a 30 % detour compared to the straight line
+const TRANSFER = 180; // minimum seconds to change vehicle
 
 let net = null;
 let loading = null;
@@ -58,7 +58,7 @@ async function ensureFile() {
   try {
     age = Date.now() - fs.statSync(GTFS_FILE).mtimeMs;
   } catch {
-    /* pas encore téléchargé */
+    /* not downloaded yet */
   }
   if (age < GTFS_MAX_AGE) return;
   try {
@@ -66,7 +66,7 @@ async function ensureFile() {
     fs.mkdirSync(DATA_DIR, { recursive: true });
     fs.writeFileSync(GTFS_FILE, zip);
   } catch (err) {
-    if (age === Infinity) throw err; // sinon on continue avec l'ancien fichier
+    if (age === Infinity) throw err; // otherwise keep going with the old file
   }
 }
 
@@ -126,7 +126,7 @@ async function load() {
     const stopTrips = new Map();
     const stopRoutes = new Map();
     for (const tr of trips.values()) {
-      // le fichier n'est pas garanti trié par ordre de passage
+      // the file is not guaranteed to be sorted by stop order
       if (tr.seq.some((s, i) => i && s < tr.seq[i - 1])) {
         const order = tr.seq.map((_, i) => i).sort((a, b) => tr.seq[a] - tr.seq[b]);
         tr.stops = order.map((i) => tr.stops[i]);
@@ -168,7 +168,7 @@ async function load() {
   }
 }
 
-// Services en circulation un jour donné ("YYYY-MM-DD").
+// Services running on a given day ("YYYY-MM-DD").
 function activeServices(n, day) {
   const key = day.replace(/-/g, "");
   const dow = new Date(`${day}T12:00:00Z`).getUTCDay();
@@ -182,8 +182,8 @@ function activeServices(n, day) {
   return active;
 }
 
-// Décalage à appliquer aux horaires d'une course pour le jour demandé : les courses d'après minuit
-// (25:10:00) appartiennent au service de la veille.
+// Offset to apply to a trip's times for the requested day: trips after midnight
+// (25:10:00) belong to the previous day's service.
 function offsetFor(n, day) {
   const todaySvc = activeServices(n, day);
   const yesterdaySvc = activeServices(n, addDays(day, -1));
@@ -204,7 +204,7 @@ function platformsNear(n, point, radius = WALK_RADIUS) {
   return near;
 }
 
-// Arrêts proches d'un point, quais regroupés par nom, avec les lignes qui y passent.
+// Stops near a point, platforms grouped by name, with the lines that serve them.
 async function nearby(point, { radius = 600, max = 4 } = {}) {
   const n = await load();
   const byGroup = new Map();
@@ -227,7 +227,7 @@ async function nearby(point, { radius = 600, max = 4 } = {}) {
     }));
 }
 
-// Version synchrone pour étiqueter des centaines d'événements une fois le réseau chargé.
+// Synchronous version to tag hundreds of events once the network is loaded.
 function nearestStop(point) {
   if (!net) return null;
   let best = null;
@@ -262,7 +262,7 @@ async function realtime() {
     }
     rtCache = { at: Date.now(), byTrip };
   } catch {
-    rtCache = { at: Date.now() - 10000, byTrip: rtCache.byTrip }; // flux indisponible : on retente dans 10 s
+    rtCache = { at: Date.now() - 10000, byTrip: rtCache.byTrip }; // feed unavailable: retry in 10 s
   }
   return rtCache.byTrip;
 }
@@ -281,13 +281,13 @@ function leg(n, trip, i, j, offset) {
   };
 }
 
-// Itinéraires entre deux points pour un jour donné, départs compris entre t0 et t1 (secondes depuis minuit).
+// Routes between two points on a given day, departures between t0 and t1 (seconds since midnight).
 function search(n, from, to, day, t0, t1) {
   const A = platformsNear(n, from);
   const B = platformsNear(n, to);
   const offset = offsetFor(n, day);
 
-  // toutes les façons d'atteindre un arrêt d'arrivée, indexées par arrêt de montée
+  // every way to reach an arrival stop, indexed by boarding stop
   const toB = new Map();
   for (const [bId, dB] of B) {
     for (const [trip, iB] of n.stopTrips.get(bId) || []) {
@@ -348,7 +348,7 @@ function search(n, from, to, day, t0, t1) {
 
 const signature = (it) => it.legs.map((l) => `${l.line.name}>${l.to}`).join("|");
 
-// from/to : { lat, lng }. arriveBy : "YYYY-MM-DDTHH:mm" (heure de l'événement) ou rien pour « partir maintenant ».
+// from/to: { lat, lng }. arriveBy: "YYYY-MM-DDTHH:mm" (the event time) or nothing for "leave now".
 async function plan({ from, to, arriveBy }) {
   const n = await load();
   const now = nowLocal();
@@ -356,7 +356,7 @@ async function plan({ from, to, arriveBy }) {
   const walk = { meters: Math.round(crow * 1.3), minutes: Math.round(walkSeconds(crow) / 60) };
   const nowSec = seconds(now.slice(11));
 
-  // l'heure d'arrivée n'a de sens que si elle est dans le futur et couverte par le calendrier publié
+  // the arrival time only makes sense in the future and within the published calendar
   const useArrive = arriveBy && arriveBy.length > 10 && arriveBy > now;
   const day = useArrive ? arriveBy.slice(0, 10) : now.slice(0, 10);
   const target = useArrive ? seconds(arriveBy.slice(11)) : null;
@@ -365,7 +365,7 @@ async function plan({ from, to, arriveBy }) {
   let options = [];
   if (covered) {
     const all = useArrive ? search(n, from, to, day, target - 6000, target) : search(n, from, to, day, nowSec, nowSec + 5400);
-    // un même véhicule se prend à plusieurs arrêts voisins : on garde celui qui fait le moins marcher
+    // one vehicle can be boarded at several nearby stops: keep the one with the least walking
     const byVehicle = new Map();
     for (const it of all) {
       const key = it.legs.map((l) => l.tripId).join("|");
@@ -381,7 +381,7 @@ async function plan({ from, to, arriveBy }) {
     const direct = ranked.find((it) => it.legs.length === 1);
     const leave = (it) => it.legs[0].dep - walkSeconds(it.walkA);
     for (const it of ranked) {
-      // une correspondance n'est proposée que si elle fait gagner au moins 5 min sur le meilleur direct
+      // a transfer is only offered if it saves at least 5 min over the best direct route
       if (direct && it.legs.length > 1) {
         const gain = useArrive ? leave(it) - leave(direct) : direct.arrive - it.arrive;
         if (gain < 300) continue;
@@ -397,7 +397,7 @@ async function plan({ from, to, arriveBy }) {
   const live = !useArrive && options.length ? await realtime() : null;
   const dayStart = Date.parse(`${day}T00:00:00Z`) / 1000;
   const parisOffset = () => {
-    // secondes à retrancher d'un "minuit UTC" pour obtenir minuit à Paris ce jour-là
+    // seconds to subtract from a "UTC midnight" to get midnight in Paris that day
     const noonUtc = new Date(`${day}T12:00:00Z`);
     const parisHour = +new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Paris", hour: "2-digit", hour12: false }).format(noonUtc);
     return (parisHour - 12) * 3600;

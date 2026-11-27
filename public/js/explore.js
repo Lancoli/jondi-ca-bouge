@@ -1,5 +1,5 @@
-// Mode « Explorer » : la carte autour de soi, ce qui se passe au créneau choisi, et une frise du temps
-// qu'on fait glisser pour voir la suite. S'appuie sur l'API exposée par app.js (window.JCB).
+// "Explore" mode: the map around you, what happens in the chosen slot, and a timeline
+// you drag to see what comes next. Relies on the API exposed by app.js (window.JCB).
 (() => {
   "use strict";
   const J = window.JCB;
@@ -7,10 +7,10 @@
 
   const $ = (sel) => document.querySelector(sel);
   const DIJON = { lat: 47.322, lng: 5.0415 };
-  const STEP = 30; // minutes par cran de la frise
-  const STEPS = 7 * 48; // sept jours
-  const WINDOW = 180; // on montre ce qui est en cours ou démarre dans les 3 h suivant le curseur
-  const BUCKET = 6; // crans regroupés par barre de l'histogramme (3 h)
+  const STEP = 30; // minutes per timeline notch
+  const STEPS = 7 * 48; // seven days
+  const WINDOW = 180; // show what is running or starts within 3 h after the cursor
+  const BUCKET = 6; // notches grouped per histogram bar (3 h)
 
   const dayOf = (s) => s.slice(0, 10);
   const addMin = (wall, n) => new Date(Date.parse(`${wall.padEnd(16, "T00:00")}:00Z`) + n * 60000).toISOString().slice(0, 16);
@@ -24,7 +24,7 @@
   let map, pins, me, tiles;
   const markers = new Map();
 
-  // ---------- Le log de modifications ----------
+  // ---------- Change log ----------
   const logs = new Map();
 
   function logChange(id, action, author = 'toi') {
@@ -78,7 +78,7 @@
     modal.addEventListener('close', () => modal.remove());
   }
 
-  // Début de la frise : maintenant, arrondi à la demi-heure précédente.
+  // Start of the timeline: now, rounded down to the half hour.
   function base() {
     const now = J.nowParis();
     return `${now.slice(0, 14)}${+now.slice(14, 16) < 30 ? "00" : "30"}`;
@@ -97,7 +97,7 @@
     return `${name[0].toUpperCase()}${name.slice(1)} ${part}`;
   }
 
-  // Ce qui est en cours ou commence dans la fenêtre qui suit le curseur.
+  // What is running or starts in the window after the cursor.
   function collect(t) {
     const until = addMin(t, WINDOW);
     const o = J.origin();
@@ -114,7 +114,7 @@
           continue;
         }
         const end = occ.end && occ.end > occ.start ? occ.end : addMin(occ.start, 120);
-        // un « créneau » de plus de 16 h est une ouverture sur plusieurs jours, pas un rendez-vous
+        // a "slot" longer than 16 h is an opening over several days, not a date
         if (minutes(occ.start, end) > 960) {
           if (ui.expos && occ.start < until && end > t) loose.push({ e, kind: "long" });
           continue;
@@ -142,10 +142,10 @@
     return { text: now && m < 60 ? `Dans ${m} min` : `À ${J.hour(x.start)}`, live: false };
   }
 
-  // ---------- Carte ----------
+  // ---------- Map ----------
   function initMap() {
     map = L.map("map", { zoomControl: false, attributionControl: true, zoomSnap: 0.5 }).setView([DIJON.lat, DIJON.lng], 14);
-    // Fond OpenStreetMap, sans clé ; en thème sombre, les tuiles sont assombries par un filtre CSS.
+    // OpenStreetMap base, no key; in the dark theme, the tiles are darkened by a CSS filter.
     tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '© contributeurs <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -153,13 +153,13 @@
     L.control.zoom({ position: "topright" }).addTo(map);
     pins = L.layerGroup().addTo(map);
     me = L.layerGroup().addTo(map);
-    // dès que tu déplaces la carte toi-même, elle cesse de se recadrer toute seule
+    // as soon as you move the map yourself, it stops reframing itself
     map.on("dragstart zoomstart", (ev) => {
       if (ev.originalEvent || ev.type === "dragstart") ui.autoFit = false;
       $("#exRecenter").hidden = ui.autoFit;
     });
-    // Carte -> carrousel : quand tu déplaces la carte, l'événement le plus proche du centre visible
-    // devient celui du carrousel.
+    // Map -> carousel: when you move the map, the event closest to the visible centre
+    // becomes the carousel's one.
     map.on("moveend", () => {
       if (Date.now() < ui.mapQuiet || ui.autoFit) return;
       const id = nearestToCentre();
@@ -171,7 +171,7 @@
     me.clearLayers();
     const o = J.origin();
     if (!o) return;
-    // deux cercles de marche : environ 5 et 15 minutes à pied
+    // two walking circles: about 5 and 15 minutes on foot
     for (const [r, op] of [[1150, 0.05], [380, 0.09]]) L.circle([o.lat, o.lng], { radius: r, color: "#c80082", weight: 1, opacity: 0.35, fillColor: "#c80082", fillOpacity: op, interactive: false }).addTo(me);
     L.marker([o.lat, o.lng], { icon: L.divIcon({ className: "", html: '<span class="me"></span>', iconSize: [22, 22], iconAnchor: [11, 11] }), interactive: false, keyboard: false }).addTo(me);
   }
@@ -198,13 +198,13 @@
       });
       const marker = L.marker([first.e.lat, first.e.lng], { icon, title: list.map((x) => x.e.title).join(" · "), riseOnHover: true }).addTo(pins);
       let turn = 0;
-      // plusieurs événements au même endroit : chaque clic passe au suivant
+      // several events at the same spot: each click moves to the next
       marker.on("click", () => focusCard(list[turn++ % list.length].e.id, true));
       for (const x of list) markers.set(x.e.id, marker);
     }
   }
 
-  // Zone de la carte réellement visible : sous les boutons, au-dessus du bandeau.
+  // Truly visible map area: below the buttons, above the bottom strip.
   function visibleZone() {
     const size = map.getSize();
     const bottom = size.y - $(".dock").offsetHeight;
@@ -234,7 +234,7 @@
     const dock = $(".dock").offsetHeight;
     if (!points.length) return map.setView([DIJON.lat, DIJON.lng], 14);
     if (points.length === 1) return map.setView(points[0], 15);
-    // on cadre d'abord ce qui est proche : au-delà de 6 km du départ, les points ne tirent plus le cadrage
+    // frame what is near first: beyond 6 km from the start, points no longer pull the framing
     const center = o ? L.latLng(o.lat, o.lng) : L.latLng(DIJON.lat, DIJON.lng);
     const near = points.filter((p) => p.distanceTo(center) < 6000);
     map.fitBounds(L.latLngBounds(near.length > 1 ? near : points), { paddingTopLeft: [36, 70], paddingBottomRight: [36, dock + 24], maxZoom: 16, animate: true });
@@ -260,12 +260,12 @@
 
   function focusCard(id, pan) {
     const card = document.querySelector(`.xcard[data-id="${id}"]`);
-    ui.listQuiet = Date.now() + 900; // ce défilement vient de la carte : il ne doit pas la redéplacer
+    ui.listQuiet = Date.now() + 900; // this scroll comes from the map: it must not move it again
     if (card) card.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
     setActive(id, pan);
   }
 
-  // ---------- Bandeau du bas ----------
+  // ---------- Bottom strip ----------
   function renderCards(t) {
     const box = $("#exCards");
     const keep = box.scrollLeft;
@@ -288,14 +288,14 @@
       </article>`;
     });
 
-    // la dernière carte invite à avancer dans le temps
+    // the last card invites moving forward in time
     const next = nextWindow();
     if (next) cards.push(`<button class="xcard xcard--next" type="button" data-ex-step="${next.step}"><span class="xcard__next"><strong>${ui.items.length ? "Et ensuite ?" : "Rien dans ce créneau"}</strong><span>${J.esc(next.label)} · ${next.count} événement${next.count > 1 ? "s" : ""}</span><b aria-hidden="true">→</b></span></button>`);
     box.innerHTML = cards.join("");
     box.dataset.sig = ui.items.map((x) => x.e.id).join(",");
     box.scrollLeft = sameSet ? keep : 0;
 
-    // Ajouter les gestionnaires pour afficher le log
+    // Add the handlers that show the log
     requestAnimationFrame(() => {
       box.querySelectorAll('.xcard[data-id]').forEach((card) => {
         const id = card.dataset.id;
@@ -324,7 +324,7 @@
     });
   }
 
-  // Prochain créneau non vide après la fenêtre courante.
+  // Next non-empty slot after the current window.
   function nextWindow() {
     const after = addMin(cursor(), WINDOW);
     const first = ui.starts.find((s) => s >= after);
@@ -349,7 +349,7 @@
     if (now.slice(11, 13) < "18") jumps.push({ label: "Ce soir", step: stepOf(`${today}T19:00`) });
     const tomorrow = dayOf(addMin(today, 1440));
     jumps.push({ label: "Demain", step: stepOf(`${tomorrow}T10:00`) }, { label: "Demain soir", step: stepOf(`${tomorrow}T19:00`) });
-    // le prochain samedi, s'il n'est pas déjà couvert par « demain »
+    // next Saturday, unless "tomorrow" already covers it
     for (let d = 2; d < 7; d++) {
       const day = dayOf(addMin(today, d * 1440));
       if (asDate(day).getUTCDay() === 6) jumps.push({ label: "Samedi", step: stepOf(`${day}T14:00`) });
@@ -359,7 +359,7 @@
       `<button class="jump jump--toggle" type="button" data-ex="expos" aria-pressed="${ui.expos}">Expos en cours</button>`;
   }
 
-  // Histogramme : combien d'événements démarrent dans chaque tranche de 3 h des sept prochains jours.
+  // Histogram: how many events start in each 3 h slice of the next seven days.
   function renderTimeline() {
     const counts = new Array(STEPS / BUCKET).fill(0);
     for (const start of ui.starts) {
@@ -383,7 +383,7 @@
     if (!map) initMap();
     map.invalidateSize();
     ui.base = base();
-    // les goûts et filtres ne sont évalués qu'une fois par rendu
+    // tastes and filters are evaluated once per render
     ui.pool = J.state.events.filter((e) => e.status !== "Annulé" && J.matches(e));
     ui.starts = ui.pool
       .filter((e) => !e.period)
@@ -440,7 +440,7 @@
     render();
   });
 
-  // La carte au centre du carrousel devient l'événement mis en avant sur la carte.
+  // The card at the centre of the carousel becomes the event highlighted on the map.
   let scrollTimer;
   $("#exCards").addEventListener("scroll", () => {
     clearTimeout(scrollTimer);
@@ -458,7 +458,7 @@
     }, 120);
   });
 
-  // Sur ordinateur, une rangée horizontale s'attrape à la souris comme on la ferait glisser au doigt.
+  // On a computer, a horizontal row is grabbed with the mouse as one would swipe it with a finger.
   function dragScroll(el, { settle = false } = {}) {
     let grab = null;
     let moved = false;
@@ -479,7 +479,7 @@
       if (!grab) return;
       grab = null;
       if (!moved) return;
-      // on termine en douceur sur la carte la plus proche avant de rendre la main à l'aimantation
+      // ease onto the nearest card before handing back to the snapping
       if (settle) {
         const mid = el.getBoundingClientRect().left + el.clientWidth / 2;
         let best = null;
@@ -494,7 +494,7 @@
     };
     addEventListener("pointerup", release);
     addEventListener("pointercancel", release);
-    // un glissement n'est pas un clic : on n'ouvre pas la fiche en relâchant
+    // a drag is not a click: releasing does not open the sheet
     el.addEventListener("click", (ev) => {
       if (!moved) return;
       ev.preventDefault();
@@ -506,7 +506,7 @@
   dragScroll($("#exCards"), { settle: true });
   for (const row of document.querySelectorAll("#soonRail, #exJumps, #catChips")) dragScroll(row);
 
-  // « Maintenant » avance tout seul.
+  // "Now" moves forward by itself.
   setInterval(() => document.visibilityState === "visible" && ui.step === 0 && render(), 60000);
 
   window.JCBExplore = { render, map: () => map };

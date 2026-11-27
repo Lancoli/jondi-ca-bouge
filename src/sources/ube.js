@@ -1,4 +1,4 @@
-// Université Bourgogne Europe : colloques, conférences, vernissages. On écarte les échéances administratives.
+// Université Bourgogne Europe: symposia, lectures, openings. Administrative deadlines are left out.
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { pad, today, addDays } = require("../lib/dates");
@@ -15,13 +15,13 @@ module.exports = {
   async fetch() {
     const t = today();
     const year = +t.slice(0, 4);
-    // "du 12.10" sans année : on prend l'occurrence la plus proche d'aujourd'hui
+    // "du 12.10" without a year: take the occurrence closest to today
     const toDay = (s) => {
       const m = String(s).match(/(\d{1,2})\.(\d{1,2})/);
       if (!m) return null;
       const d = `${year}-${pad(+m[2])}-${pad(+m[1])}`;
       const guess = d < addDays(t, -120) ? `${year + 1}${d.slice(4)}` : d;
-      return guess <= addDays(t, 150) ? guess : null; // plus loin : c'est une archive de l'an passé
+      return guess <= addDays(t, 150) ? guess : null; // further away: it is last year's archive
     };
     const events = [];
     for (let page = 1; page <= 1; page++) {

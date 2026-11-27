@@ -1,4 +1,4 @@
-// Serveur local : sert l'interface et expose les événements agrégés, le géocodage et les trajets Divia.
+// Local server: serves the interface and exposes the aggregated events, geocoding and Divia trips.
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
@@ -18,7 +18,7 @@ let payload = readCached();
 let refreshing = null;
 let lastError = null;
 
-// Ajoute à chaque événement géolocalisé son arrêt Divia le plus proche (calculé une fois par chargement).
+// Adds to each geolocated event its nearest Divia stop (computed once per load).
 function withTransit(p) {
   if (!p) return p;
   for (const e of p.events) {
@@ -76,7 +76,7 @@ const routes = {
     json(res, 200, await suggest(text));
   },
 
-  // Nom lisible d'une position GPS (Base Adresse Nationale).
+  // Readable name of a GPS position (Base Adresse Nationale).
   "GET /api/reverse": async (req, res, q) => {
     const p = point(q.get("at"));
     if (!p) return json(res, 400, { error: "position invalide" });

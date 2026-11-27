@@ -1,6 +1,6 @@
 const cheerio = require("cheerio");
 
-// HTML -> texte lisible, entités décodées, espaces resserrés.
+// HTML -> readable text, entities decoded, spaces collapsed.
 function clean(html) {
   if (!html) return "";
   const withBreaks = String(html).replace(/<(br|\/p|\/div|\/li|\/h\d)\b[^>]*>/gi, "$& ");
@@ -21,7 +21,7 @@ function absolute(url, base) {
   }
 }
 
-// Extrait tous les objets schema.org d'un type donné depuis les blocs JSON-LD d'une page.
+// Extracts every schema.org object of a given type from a page's JSON-LD blocks.
 function jsonLd(html, type) {
   const found = [];
   const walk = (o) => {
@@ -34,7 +34,7 @@ function jsonLd(html, type) {
     try {
       walk(JSON.parse(m[1]));
     } catch {
-      /* bloc JSON-LD invalide : on l'ignore */
+      /* invalid JSON-LD block: ignored */
     }
   }
   return found;

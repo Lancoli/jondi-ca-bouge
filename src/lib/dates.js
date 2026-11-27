@@ -1,4 +1,4 @@
-// Toutes les dates manipulées sont des heures murales de Paris, au format "YYYY-MM-DD" ou "YYYY-MM-DDTHH:mm".
+// Every date handled is Paris wall-clock time, as "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm".
 const TZ = "Europe/Paris";
 
 const MONTHS = {
@@ -23,7 +23,7 @@ const fmt = new Intl.DateTimeFormat("sv-SE", {
   timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false,
 });
 
-// Instant (Date, ISO avec fuseau, timestamp) -> heure murale de Paris.
+// Instant (Date, ISO with zone, timestamp) -> Paris wall-clock time.
 function toLocal(input) {
   const d = input instanceof Date ? input : new Date(input);
   if (isNaN(d)) return null;
@@ -43,7 +43,7 @@ function monthNumber(word) {
   return MONTHS[strip(word).replace(/\./g, "")] || null;
 }
 
-// "Samedi 10 octobre 2026", "10 oct.", "1er mars" -> "2026-10-10". Sans année : la prochaine occurrence.
+// "Samedi 10 octobre 2026", "10 oct.", "1er mars" -> "2026-10-10". Without a year: the next occurrence.
 function parseFrDate(text, { defaultYear } = {}) {
   const m = strip(text).match(/(\d{1,2})(?:er)?\s+([a-z]{3,9})\.?(?:\s+(\d{4}))?/);
   if (!m) return null;
@@ -53,7 +53,7 @@ function parseFrDate(text, { defaultYear } = {}) {
   if (!year) {
     const t = today();
     year = +t.slice(0, 4);
-    // une date sans année déjà passée de plus de deux mois désigne l'an prochain
+    // a date without a year that passed more than two months ago means next year
     if (`${year}-${pad(month)}-${pad(+m[1])}` < addDays(t, -60)) year++;
   }
   return `${year}-${pad(month)}-${pad(+m[1])}`;
@@ -66,12 +66,12 @@ function parseFrTime(text) {
   return `${pad(+m[1])}:${m[2] || "00"}`;
 }
 
-// Année d'une date de saison culturelle (sept. -> août) exprimée sans année.
+// Year of a cultural-season date (Sept. -> Aug.) written without a year.
 function seasonYear(month, seasonStartYear) {
   return month >= 8 ? seasonStartYear : seasonStartYear + 1;
 }
 
-// Saison en cours : démarre en août.
+// Current season: starts in August.
 function currentSeasonStart() {
   const t = today();
   return +t.slice(5, 7) >= 8 ? +t.slice(0, 4) : +t.slice(0, 4) - 1;

@@ -1,5 +1,5 @@
-// Registre des sources. Pour en ajouter une : un module { id, name, site, kind, fetch(ctx) } qui renvoie
-// des événements bruts { title, url, start, end?, occurrences?, venue?, address?, city?, lat?, lng?, tags?, price?, free?, image?, description? }.
+// Source registry. To add one: a module { id, name, site, kind, fetch(ctx) } that returns
+// raw events { title, url, start, end?, occurrences?, venue?, address?, city?, lat?, lng?, tags?, price?, free?, image?, description? }.
 const dijonWp = require("./dijonwp");
 const jsonLd = require("./jsonld");
 

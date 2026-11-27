@@ -1,6 +1,6 @@
 const { toLocal } = require("./dates");
 
-// Parseur iCalendar minimal : VEVENT -> objet de propriétés (les lignes repliées sont recollées).
+// Minimal iCalendar parser: VEVENT -> property object (folded lines are joined back).
 function parseIcal(text) {
   const lines = String(text).replace(/\r?\n[ \t]/g, "").split(/\r?\n/);
   const events = [];
@@ -20,7 +20,7 @@ function parseIcal(text) {
   return events;
 }
 
-// "20261009T170000Z" -> heure de Paris ; "20261009" -> jour seul ; sans Z : déjà en heure locale.
+// "20261009T170000Z" -> Paris time; "20261009" -> day only; without Z: already local time.
 function icalDate(v) {
   const m = String(v || "").match(/^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?/);
   if (!m) return null;

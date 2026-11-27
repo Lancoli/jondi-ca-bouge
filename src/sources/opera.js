@@ -1,4 +1,4 @@
-// Opéra de Dijon : calendrier de saison en HTML, paginé (jour + mois, sans année ni heure).
+// Opéra de Dijon: season calendar in HTML, paginated (day + month, without year or time).
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { pad, monthNumber, seasonYear, currentSeasonStart } = require("../lib/dates");

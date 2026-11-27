@@ -1,5 +1,5 @@
-// Jondi.fr : agenda local très fourni (bars, concerts, ateliers, vide-greniers…). Une page par jour.
-// Son API publique des lieux sert aussi de gazetier : nom de lieu -> coordonnées.
+// Jondi.fr: a very rich local agenda (bars, concerts, workshops, car-boot sales…). One page per day.
+// Its public venue API also serves as a gazetteer: venue name -> coordinates.
 const cheerio = require("cheerio");
 const { get, pmap } = require("../lib/http");
 const { today, addDays } = require("../lib/dates");
@@ -23,7 +23,7 @@ module.exports = {
   name: "Jondi",
   site: "https://jondi.fr",
   kind: "Agenda local",
-  every: 12 * 3600, // deux relevés par jour au plus
+  every: 12 * 3600, // two collections a day at most
   fetchVenues,
   async fetch() {
     const days = Array.from({ length: DAYS }, (_, i) => addDays(today(), i));
@@ -40,7 +40,7 @@ module.exports = {
           const url = card.find("a.jondi-event-card__link").attr("href");
           const title = clean(card.find(".jondi-list-title").html());
           if (!url || !title) return;
-          // l'URL d'une occurrence porte sa date et son heure : /evenement/slug/2026-10-09/18-30-00/
+          // an occurrence's URL carries its date and time: /evenement/slug/2026-10-09/18-30-00/
           const m = url.match(/\/(\d{4}-\d{2}-\d{2})\/(\d{2})-(\d{2})-\d{2}\/?$/);
           const time = m ? `${m[2]}:${m[3]}` : /^\d{2}:\d{2}$/.test(slot) ? slot : null;
           const price = clean(card.find(".jondi-list-price").html());

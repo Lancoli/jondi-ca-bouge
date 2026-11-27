@@ -1,4 +1,4 @@
-// Le Cèdre (Chenôve) : la date est écrite en toutes lettres dans le titre de chaque spectacle.
+// Le Cèdre (Chenôve): the date is spelled out in full in each show's title.
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { parseFrDate } = require("../lib/dates");
@@ -25,7 +25,7 @@ module.exports = {
         title: clean(link.html()),
         url: link.attr("href"),
         start,
-        timeHint: true, // l'heure est écrite sur la fiche, juste après la date
+        timeHint: true, // the time is written on the detail page, right after the date
         venue: "Le Cèdre",
         address: "9 Esplanade de la République, 21300 Chenôve",
         city: "Chenôve",

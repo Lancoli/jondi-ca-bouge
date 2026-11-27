@@ -1,8 +1,8 @@
-// Service worker : l'appli s'ouvre hors connexion avec le dernier agenda reçu.
-// Réseau d'abord partout, pour ne jamais montrer une ancienne version quand le serveur répond ;
-// le cache ne sert qu'en secours. Trajets, géocodage et actualisation restent en ligne seulement :
-// un trajet calculé hier serait faux aujourd'hui.
-const CACHE = "jcb-v2"; // v2 : fichiers rangés (css/, js/, assets/icons/) ; changer le nom purge l’ancien cache
+// Service worker: the app opens offline with the last agenda received.
+// Network first everywhere, so as never to show an old version when the server answers;
+// the cache is only a fallback. Trips, geocoding and refresh stay online only:
+// a trip computed yesterday would be wrong today.
+const CACHE = "jcb-v2"; // v2: files tidied (css/, js/, assets/icons/); changing the name purges the old cache
 const SHELL = [
   "./", "index.html", "css/style.css", "js/app.js", "js/explore.js", "manifest.webmanifest", "favicon.svg",
   "vendor/leaflet/leaflet.css", "vendor/leaflet/leaflet.js", "vendor/fonts/outfit-latin.woff2",
@@ -37,9 +37,9 @@ async function networkFirst(req, key = req) {
 self.addEventListener("fetch", (ev) => {
   const req = ev.request;
   const url = new URL(req.url);
-  if (req.method !== "GET" || url.origin !== location.origin) return; // tuiles de carte, images des sources
+  if (req.method !== "GET" || url.origin !== location.origin) return; // map tiles, source images
   if (url.pathname.endsWith("/api/events")) {
-    // marque la réponse de secours pour que l'interface dise qu'elle est hors ligne
+    // flags the fallback response so the interface says it is offline
     return ev.respondWith(
       fetch(req)
         .then(async (res) => {

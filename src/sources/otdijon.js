@@ -1,4 +1,4 @@
-// Office de tourisme de Dijon Métropole : « tout l'agenda » (fêtes, marchés, visites, y compris autour de Dijon).
+// Dijon Métropole tourist office: "the whole agenda" (festivals, markets, tours, including around Dijon).
 const cheerio = require("cheerio");
 const { get, pmap } = require("../lib/http");
 const { today, parseFrDate } = require("../lib/dates");
@@ -31,7 +31,7 @@ module.exports = {
         const url = link.attr("href");
         if (!url || seen.has(url)) return;
         seen.add(url);
-        // "Jusqu'au 31 décembre 2026", "Le 10 octobre 2026", "Du 9 au 11 octobre 2026"
+        // "Jusqu'au 31 décembre 2026", "Le 10 octobre 2026", "Du 9 au 11 octobre 2026" (source formats)
         const when = clean(card.find(".wpetOfferDate").html());
         let start, end = null;
         const range = when.match(/du\s+(.+?)\s+au\s+(.+)/i);

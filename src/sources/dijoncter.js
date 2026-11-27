@@ -1,4 +1,4 @@
-// Dijoncter.info : agenda militant et alternatif (réunions publiques, projections, chantiers, fêtes de lutte), en iCal.
+// Dijoncter.info: activist and alternative agenda (public meetings, screenings, work days, struggle parties), as iCal.
 const { get } = require("../lib/http");
 const { parseIcal, icalDate } = require("../lib/ical");
 

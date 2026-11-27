@@ -1,4 +1,4 @@
-// Atheneum : centre culturel de l'université, sur le campus (expos arts-sciences, concerts, sorties de résidence).
+// Atheneum: the university's cultural centre, on campus (art-science exhibitions, concerts, residency showings).
 const cheerio = require("cheerio");
 const { get } = require("../lib/http");
 const { parseFrDate } = require("../lib/dates");

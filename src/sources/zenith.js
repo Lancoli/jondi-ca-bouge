@@ -1,4 +1,4 @@
-// Zénith de Dijon : API REST WordPress publique, les séances sont dans acf.sessions.
+// Zénith de Dijon: public WordPress REST API, sessions are in acf.sessions.
 const { get } = require("../lib/http");
 const { nowLocal } = require("../lib/dates");
 const { clean } = require("../lib/text");
@@ -19,7 +19,7 @@ module.exports = {
         batch = await get(`https://www.zenith-dijon.fr/wp-json/wp/v2/event?per_page=100&page=${page}&_fields=${FIELDS}`, { as: "json" });
       } catch (err) {
         if (page === 1) throw err;
-        break; // au-delà de la dernière page, WordPress répond 400
+        break; // past the last page, WordPress answers 400
       }
       for (const p of batch) {
         const acf = p.acf || {};

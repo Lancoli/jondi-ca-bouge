@@ -1,17 +1,17 @@
-// Adaptateur générique : toute page qui expose des événements schema.org en JSON-LD (Eventbrite, Meetup…).
+// Generic adapter: any page exposing schema.org events as JSON-LD (Eventbrite, Meetup…).
 const { get, pmap } = require("../lib/http");
 const { toLocal } = require("../lib/dates");
 const { jsonLd, clean } = require("../lib/text");
 const { DIJON, distance } = require("../lib/geo");
 
-// Les recherches « Dijon » de ces plateformes remontent aussi Paris ou la Belgique.
+// These platforms' "Dijon" searches also bring up Paris or Belgium.
 const LOCAL = /dijon|chen[oô]ve|talant|quetigny|longvic|fontaine-l[eè]s|marsannay|saint-apollinaire|chevigny/i;
 function isLocal(e, postalCode) {
   if (Number.isFinite(e.lat) && Number.isFinite(e.lng)) return distance(DIJON, e) < 30000 && (!postalCode || /^21/.test(postalCode));
   return /^21/.test(postalCode || "") || LOCAL.test(e.city || "");
 }
 
-// "2026-10-13" reste un jour seul ; une date avec fuseau est ramenée à l'heure de Paris.
+// "2026-10-13" stays a day only; a date with a zone is brought back to Paris time.
 function ldDate(v) {
   if (!v) return null;
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;

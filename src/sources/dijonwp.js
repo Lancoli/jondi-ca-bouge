@@ -1,7 +1,7 @@
-// Sites de la Ville (dijon.fr, musees.dijon.fr) : même thème WordPress, même balisage de cartes.
-// La liste donne les dates ; l'heure, le lieu et le tarif sont sur la fiche. On lit au plus DETAIL_MAX
-// fiches nouvelles par passage, les plus proches d'abord, et on les garde en cache : le site n'est pas
-// martelé et la couverture se complète de lancement en lancement.
+// City websites (dijon.fr, musees.dijon.fr): same WordPress theme, same card markup.
+// The list gives the dates; time, place and price are on the detail page. At most DETAIL_MAX
+// new pages are read per run, nearest first, and kept in cache: the site is not
+// hammered and coverage fills up from run to run.
 const cheerio = require("cheerio");
 const { get, pmap } = require("../lib/http");
 const { today, parseFrTime } = require("../lib/dates");
@@ -9,7 +9,7 @@ const { clean } = require("../lib/text");
 
 const DETAIL_MAX = 140;
 
-// Les fiches écrivent les lieux en capitales : "MUSEE DES BEAUX ARTS" -> "Musee des Beaux Arts".
+// The pages write places in capitals: "MUSEE DES BEAUX ARTS" -> "Musee des Beaux Arts".
 const SMALL = new Set(["de", "des", "du", "la", "le", "les", "et", "à", "au", "aux", "en", "d", "l"]);
 function calm(text) {
   if (!text || text !== text.toUpperCase()) return text;
@@ -17,7 +17,7 @@ function calm(text) {
 }
 
 // "LE 1204 - CENTRE … - 12 Parvis de l'UNESCO - 21000 - Dijon" -> { venue, address, city }
-// (variante des musées : "MUSEE ARCHEOLOGIQUE, DIJON - 5 Rue Docteur Maret -,21000 - Dijon (ouverture…)")
+// (museums variant: "MUSEE ARCHEOLOGIQUE, DIJON - 5 Rue Docteur Maret -,21000 - Dijon (ouverture…)")
 function splitPlace(text) {
   const parts = clean(text)
     .replace(/\(ouverture[^)]*\)/i, "")
@@ -31,7 +31,7 @@ function splitPlace(text) {
   const city = parts[i + 1] || "Dijon";
   const street = parts[i - 1].replace(/^0\s+/, "");
   return {
-    // sans nom de lieu, la source ne donne que l'adresse
+    // without a venue name, the source only gives the address
     venue: i >= 2 ? tidy(parts.slice(0, i - 1).join(" - ")) : street,
     address: `${street}, ${parts[i]} ${city}`,
     city,
@@ -99,7 +99,7 @@ module.exports = function dijonWp({ id, name, site, listUrl, defaultVenue }) {
           e.end = d.endTime ? `${e.start}T${d.endTime}` : null;
           e.start = `${e.start}T${d.time}`;
         }
-        // le lieu est gardé brut en cache et découpé ici : un correctif du découpage vaut pour tout le cache
+        // the place is cached raw and split here: a fix to the split applies to the whole cache
         const place = d.place ? splitPlace(d.place) : {};
         if (place.venue) e.venue = place.venue;
         if (place.address) e.address = place.address;

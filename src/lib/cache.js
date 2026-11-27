@@ -1,4 +1,4 @@
-// Cache disque clé/valeur avec durée de vie, pour les fiches détail et le géocodage.
+// Key/value disk cache with a lifetime, for detail pages and geocoding.
 const fs = require("fs");
 const path = require("path");
 
@@ -10,7 +10,7 @@ function openCache(name) {
   try {
     store = JSON.parse(fs.readFileSync(file, "utf8"));
   } catch {
-    /* premier lancement : cache vide */
+    /* first run: empty cache */
   }
   let dirty = false;
   return {
