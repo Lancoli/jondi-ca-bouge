@@ -38,7 +38,7 @@
     const header = document.createElement('div');
     header.className = 'change-log-header';
     const h3 = document.createElement('h3');
-    h3.textContent = `Historique : ${e.title}`;
+    h3.textContent = `Historique : ${e.title}`;
     header.append(h3);
     const closeBtn = document.createElement('button');
     closeBtn.className = 'change-log-close';
@@ -133,13 +133,13 @@
   }
 
   function whenText(x, t) {
-    if (x.kind === "period") return { text: `Jusqu'au ${fmtDay.format(asDate(x.e.period.end))}`, live: false };
+    if (x.kind === "period") return { text: `Jusqu'au ${fmtDay.format(asDate(x.e.period.end))}`, live: false };
     if (x.kind === "day") return { text: "Dans la journée", live: false };
     if (x.kind === "long") return { text: "Sur plusieurs jours", live: false };
     const now = ui.step === 0;
-    if (x.live) return { text: now ? `En cours · jusqu'à ${J.hour(x.end)}` : `Commencé à ${J.hour(x.start)}`, live: now };
+    if (x.live) return { text: now ? `En cours · jusqu'à ${J.hour(x.end)}` : `Commencé à ${J.hour(x.start)}`, live: now };
     const m = Math.round(minutes(t, x.start));
-    return { text: now && m < 60 ? `Dans ${m} min` : `À ${J.hour(x.start)}`, live: false };
+    return { text: now && m < 60 ? `Dans ${m} min` : `À ${J.hour(x.start)}`, live: false };
   }
 
   // ---------- Map ----------

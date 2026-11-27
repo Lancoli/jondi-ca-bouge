@@ -202,7 +202,7 @@
     const on = isWished(e);
     const label = on ? "Retirer de ma liste" : "Ajouter à ma liste";
     const text = cls === "wish" ? ICONS.heart : `<span class="act__ico">${on ? "♥" : "♡"}</span><span>${on ? "Sauvegardé" : "Sauvegarder"}</span>`;
-    return `<button class="${cls}" type="button" data-wish="${e.id}" aria-pressed="${on}" aria-label="${label} : ${esc(e.title)}" title="${label}">${text}</button>`;
+    return `<button class="${cls}" type="button" data-wish="${e.id}" aria-pressed="${on}" aria-label="${label} : ${esc(e.title)}" title="${label}">${text}</button>`;
   };
 
   // ---------- Attendance logbook ----------
@@ -411,7 +411,7 @@
     if (e.ageMin != null) tags.push(`<span class="tag">dès ${e.ageMin} an${e.ageMin > 1 ? "s" : ""}</span>`);
     if (e.status) tags.unshift(`<span class="tag tag--status">${esc(e.status)}</span>`);
     if (hasTastes() && slot.score >= 3) tags.unshift('<span class="tag tag--you">Pour toi</span>');
-    for (const l of (e.stop?.lines || []).slice(0, 2)) tags.push(`<span class="tag tag--line" style="--line:${esc(l.color)}" title="Arrêt ${esc(e.stop.name)} à ${e.stop.distance} m">${esc(l.name)}</span>`);
+    for (const l of (e.stop?.lines || []).slice(0, 2)) tags.push(`<span class="tag tag--line" style="--line:${esc(l.color)}" title="Arrêt ${esc(e.stop.name)} à ${e.stop.distance} m">${esc(l.name)}</span>`);
     const more = e.occurrences.length ? `<span class="tag">+${e.occurrences.length} date${e.occurrences.length > 1 ? "s" : ""}</span>` : "";
     const src = e.sources.length > 1 ? `<span class="tag" title="${esc(e.sources.map((s) => s.name).join(", "))}">${e.sources.length} sources</span>` : `<span class="tag">${esc(e.sources[0].name)}</span>`;
     // the heart is a button next to the card: no button inside a button
@@ -529,7 +529,7 @@
     $("#ongoingCount").textContent = `(${state.events.filter((e) => e.ongoing && matches(e)).length})`;
     $("#sourcesCount").textContent = `(${state.sources.filter((s) => s.kept).length}/${state.sources.length})`;
     $("#originBtn").classList.toggle("is-set", !!o);
-    $("#originLabel").textContent = o ? `Départ : ${o.label}` : "Définir mon point de départ";
+    $("#originLabel").textContent = o ? `Départ : ${o.label}` : "Définir mon point de départ";
   }
 
   function renderAgenda() {
