@@ -27,47 +27,47 @@
   // ---------- Le log de modifications ----------
   const logs = new Map();
 
-  function logModif(id, action, auteur = 'toi') {
+  function logChange(id, action, author = 'toi') {
     if (!logs.has(id)) logs.set(id, []);
-    logs.get(id).unshift({ date: new Date().toISOString().split('T')[0], auteur, action });
+    logs.get(id).unshift({ date: new Date().toISOString().split('T')[0], auteur: author, action });
   }
 
-  function afficherLog(e) {
+  function showLog(e) {
     const modal = document.createElement('dialog');
-    modal.className = 'fil-log-modal';
+    modal.className = 'change-log-modal';
     const header = document.createElement('div');
-    header.className = 'fil-log-header';
+    header.className = 'change-log-header';
     const h3 = document.createElement('h3');
     h3.textContent = `Historique : ${e.title}`;
     header.append(h3);
-    const fermer = document.createElement('button');
-    fermer.className = 'fil-log-fermer';
-    fermer.type = 'button';
-    fermer.textContent = '×';
-    fermer.addEventListener('click', () => modal.close());
-    header.append(fermer);
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'change-log-close';
+    closeBtn.type = 'button';
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', () => modal.close());
+    header.append(closeBtn);
     modal.append(header);
 
-    const historique = logs.get(e.id) || [];
-    if (!historique.length) {
-      historique.push({ date: new Date().toISOString().split('T')[0], auteur: 'toi', action: 'Création' });
+    const history = logs.get(e.id) || [];
+    if (!history.length) {
+      history.push({ date: new Date().toISOString().split('T')[0], auteur: 'toi', action: 'Création' });
     }
 
     const list = document.createElement('ul');
-    list.className = 'fil-log-liste';
-    historique.forEach(({ date, auteur, action }) => {
+    list.className = 'change-log-list';
+    history.forEach(({ date, auteur: author, action }) => {
       const li = document.createElement('li');
-      li.className = 'fil-log-item';
+      li.className = 'change-log-item';
       const dateSpan = document.createElement('span');
-      dateSpan.className = 'fil-log-date slate';
+      dateSpan.className = 'change-log-date slate';
       dateSpan.textContent = date;
-      const auteurSpan = document.createElement('strong');
-      auteurSpan.className = 'fil-log-auteur';
-      auteurSpan.textContent = auteur;
+      const authorSpan = document.createElement('strong');
+      authorSpan.className = 'change-log-author';
+      authorSpan.textContent = author;
       const actionSpan = document.createElement('span');
-      actionSpan.className = 'fil-log-action';
+      actionSpan.className = 'change-log-action';
       actionSpan.textContent = action;
-      li.append(dateSpan, auteurSpan, actionSpan);
+      li.append(dateSpan, authorSpan, actionSpan);
       list.append(li);
     });
     modal.append(list);
@@ -305,12 +305,12 @@
         let longPressTimer = null;
         card.addEventListener('contextmenu', (ev) => {
           ev.preventDefault();
-          afficherLog(item.e);
+          showLog(item.e);
         });
 
         card.addEventListener('pointerdown', (ev) => {
           if (ev.target.closest('button')) return;
-          longPressTimer = setTimeout(() => afficherLog(item.e), 500);
+          longPressTimer = setTimeout(() => showLog(item.e), 500);
         });
 
         card.addEventListener('pointerup', () => {

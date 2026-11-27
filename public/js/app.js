@@ -224,7 +224,7 @@
       ? `<div class="checkin is-here"><strong>Tu y es !</strong><span>À ${km(d)} du lieu.</span><button class="btn btn--rose btn--small" type="button" data-action="checkin">J'y suis — ajouter au carnet</button></div>`
       : `<div class="checkin"><strong>C'est maintenant</strong><span>Tu es à ${km(d)}. Approche-toi à moins de 300 m pour valider ta présence.</span><button class="btn btn--small" type="button" data-action="gps">Actualiser ma position</button></div>`;
   }
-  function carnetHtml() {
+  function logbookHtml() {
     if (!prefs.seen.length) return "";
     const rows = [...prefs.seen].sort((a, b) => b.at - a.at).map((w) => `<div class="gone__row"><span><strong>${esc(w.title)}</strong><small>${esc(fmtShort.format(asDate(w.start)))}${w.venue ? " · " + esc(w.venue) : ""}</small></span>${w.url ? `<a class="btn btn--small" href="${esc(w.url)}" target="_blank" rel="noopener">Source ↗</a>` : ""}</div>`).join("");
     return `<div class="day panel"><div class="day__head">${ICONS.calendar}<h2>Carnet de sorties</h2><p class="muted">${prefs.seen.length} événement${prefs.seen.length > 1 ? "s" : ""} où tu as validé ta présence sur place.</p></div><div class="gone">${rows}</div></div>`;
@@ -541,7 +541,7 @@
     if (state.view === "sources") return renderSources(root);
     if (state.view === "wish") {
       renderWish(root);
-      return root.insertAdjacentHTML("beforeend", carnetHtml());
+      return root.insertAdjacentHTML("beforeend", logbookHtml());
     }
     if (state.view === "ongoing") {
       const list = state.events.filter((e) => e.ongoing && matches(e)).map((e) => ({ e, start: dayOf(e.start), end: e.end, day: dayOf(e.start), score: score(e, null) }));
@@ -709,11 +709,11 @@
       from = compact(e.period ? e.period.start : slot.day);
       to = compact(addDays(e.period ? e.period.end : slot.day, 1)); // fin exclue
     }
-    const tarif = e.free ? "Gratuit" : e.priceLibre ? "Prix libre" : e.price || "";
+    const priceText = e.free ? "Gratuit" : e.priceLibre ? "Prix libre" : e.price || "";
     const text = (e.description || "").replace(/\s+/g, " ").trim();
     const details = [
       guessed ? "Heure de fin non indiquée par la source : une heure mise par défaut." : "",
-      tarif,
+      priceText,
       e.booking ? "Sur inscription ou réservation." : "",
       text.length > 500 ? `${text.slice(0, 500)}…` : text,
       e.url,
@@ -761,7 +761,7 @@
     const when = e.ongoing && slot.start.length <= 10 ? `Jusqu'au ${fmtLong.format(asDate(e.period.end))}` : `${dayLabel(slot.day)} · ${whenLabel(slot)}`;
     const byKind = (k) => e.categories.filter((c) => cat(c).kind === k).map((c) => cat(c).label);
     const fact = (ico, main, sub = "") => `<div class="fact">${ico}<div>${main}${sub ? `<small>${sub}</small>` : ""}</div></div>`;
-    const tarif = e.free ? "Gratuit" : e.priceLibre ? "Prix libre" : e.price || "";
+    const priceText = e.free ? "Gratuit" : e.priceLibre ? "Prix libre" : e.price || "";
     const about = (e.description || "").split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
     const modes = [["walking", "À pied"], ["bicycling", "À vélo"], ["driving", "En voiture"]];
     const go = e.precise
@@ -797,7 +797,7 @@
 
           <div class="facts facts--grid">
             ${fact(ICONS.pin, esc(e.venue || e.city || "Lieu non précisé par la source"), esc(e.address || (e.venue ? e.city : "") || ""))}
-            ${fact(ICONS.euro, tarif ? esc(tarif) : "Tarif non indiqué", e.free && e.price && !/gratuit/i.test(e.price) ? esc(e.price) : "")}
+            ${fact(ICONS.euro, priceText ? esc(priceText) : "Tarif non indiqué", e.free && e.price && !/gratuit/i.test(e.price) ? esc(e.price) : "")}
             ${e.ageMin != null ? fact(ICONS.age, `À partir de ${e.ageMin} an${e.ageMin > 1 ? "s" : ""}`) : byKind("public").length ? fact(ICONS.age, esc(byKind("public").join(", "))) : ""}
             ${e.booking ? fact(ICONS.ticket, "Sur inscription ou réservation", "À faire sur la page d'origine.") : ""}
             ${e.stop ? fact(ICONS.bus, `Arrêt ${esc(e.stop.name)} · ${e.stop.distance} m`, e.stop.lines.map((l) => `<span class="line" style="--line:${esc(l.color)}">${esc(l.name)}</span>`).join("")) : ""}
@@ -926,7 +926,7 @@
   // ---------- Panneau « Mes goûts » ----------
   function renderTastes() {
     const t = prefs.tastes;
-    const tri = (c) => {
+    const sortKey = (c) => {
       const v = t.cats[c.id] || 0;
       const b = (val, label) => `<button type="button" data-taste="${c.id}" data-v="${val}" aria-pressed="${v === val}">${label}</button>`;
       return `<div class="taste" data-c="${look(c.id)[0]}"><span class="taste__name"><i></i>${esc(c.label)}</span><span class="tri">${b(1, "♥ J'aime")}${b(0, "Neutre")}${b(-1, "Masquer")}</span></div>`;
@@ -941,7 +941,7 @@
       </div>
       <h3>Catégories</h3>
       <p class="note" style="margin:0 0 8px">Ce que tu aimes passe devant et reçoit l'étiquette « Pour toi ». Ce que tu masques disparaît partout.</p>
-      ${KINDS.map((k) => `<p class="taste__group"><strong>${k.label}</strong> ${k.hint}</p>${state.categories.filter((c) => c.kind === k.id).map(tri).join("")}`).join("")}
+      ${KINDS.map((k) => `<p class="taste__group"><strong>${k.label}</strong> ${k.hint}</p>${state.categories.filter((c) => c.kind === k.id).map(sortKey).join("")}`).join("")}
       <h3>Mots-clés que j'aime</h3>
       <form class="field" data-words="like"><input type="text" placeholder="reforestation, jazz, Lentillères… puis Entrée" aria-label="Ajouter un mot-clé aimé"></form>
       <div class="words" style="margin-top:8px">${words(t.like, "like")}</div>
@@ -1204,9 +1204,9 @@
     if (carForm) {
       ev.preventDefault();
       const num = (v) => parseFloat(String(v).replace(",", "."));
-      const conso = num(carForm.conso.value);
-      const prix = num(carForm.prix.value);
-      prefs.car = conso > 0 && prix > 0 ? { conso, prix } : null;
+      const consumption = num(carForm.conso.value);
+      const priceValue = num(carForm.prix.value);
+      prefs.car = consumption > 0 && priceValue > 0 ? { conso: consumption, prix: priceValue } : null;
       save();
       return renderOrigin(prefs.car ? "Voiture enregistrée : le coût en essence s'affichera sur les trajets." : "Voiture effacée.");
     }

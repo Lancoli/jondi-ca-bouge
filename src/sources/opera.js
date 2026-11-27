@@ -37,25 +37,25 @@ module.exports = {
       };
       const before = seen.size;
       $(".bloc_spectacle").each((_, el) => {
-        const bloc = $(el);
-        const link = bloc.find("h2 a").first();
-        const start = day(bloc.find(".jour_debut"));
+        const blockEl = $(el);
+        const link = blockEl.find("h2 a").first();
+        const start = day(blockEl.find(".jour_debut"));
         const href = link.attr("href");
         if (!start || !href || seen.has(href)) return;
         seen.add(href);
-        const lieu = clean(bloc.find(".lieu_texte").html());
-        const place = VENUES[strip(lieu)] || { venue: lieu ? `Opéra de Dijon – ${lieu}` : "Opéra de Dijon" };
-        const bg = (bloc.attr("style") || "").match(/url\(([^)]+)\)/);
+        const venueText = clean(blockEl.find(".lieu_texte").html());
+        const place = VENUES[strip(venueText)] || { venue: venueText ? `Opéra de Dijon – ${venueText}` : "Opéra de Dijon" };
+        const bg = (blockEl.attr("style") || "").match(/url\(([^)]+)\)/);
         events.push({
           title: clean(link.html()),
           url: absolute(href, url),
           start,
-          end: day(bloc.find(".jour_fin")),
+          end: day(blockEl.find(".jour_fin")),
           ...place,
           city: "Dijon",
-          tags: [clean(bloc.find(".text_goutte").html())].filter(Boolean),
+          tags: [clean(blockEl.find(".text_goutte").html())].filter(Boolean),
           image: bg ? absolute(bg[1].replace(/['"]/g, ""), url) : null,
-          description: clean(bloc.find(".titre_auteur .H2").html()),
+          description: clean(blockEl.find(".titre_auteur .H2").html()),
         });
       });
       if (seen.size === before) break;
