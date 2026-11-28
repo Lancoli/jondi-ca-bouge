@@ -73,8 +73,8 @@
       "id": "auto-git",
       "texte": "N0 · dépôt git propre (rien en attente de commit)",
       "pour": "git",
-      "preuve": "5 fichier(s) non commité(s)",
-      "fait": true,
+      "preuve": "1 fichier(s) non commité(s)",
+      "fait": false,
       "auto": true,
       "fait_le": "2026-11-26T22:38:44.482Z"
     },
@@ -107,20 +107,17 @@
     }
   ],
   "etat": {
-    "date": "2026-11-27T04:17:42.032Z",
-    "niveau": "N0",
-    "prochain": "N1",
+    "date": "2026-11-27T12:11:09.207Z",
+    "niveau": null,
+    "prochain": "N0",
     "bloque": [
-      "liens",
-      "console",
-      "mobile",
-      "remplissage"
+      "git"
     ],
     "humain": {},
     "criteres": {
       "git": {
-        "ok": true,
-        "preuve": "propre",
+        "ok": false,
+        "preuve": "1 fichier(s) non commité(s)",
         "niveau": "N0",
         "texte": "dépôt git propre (rien en attente de commit)",
         "type": "auto"
@@ -246,7 +243,7 @@
       },
       "e2e": {
         "ok": null,
-        "preuve": "scénario à écrire (champ « test » de jalons.json)",
+        "preuve": "scenario to write (\"test\" field in milestones.json)",
         "niveau": "N3",
         "texte": "le parcours critique passe de bout en bout",
         "type": "auto"
